@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{228F2304-4706-41E8-B64F-EBAB7D36D006}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ProccessorLib</RootNamespace>
+    <AssemblyName>ProccessorLib</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BillingERPConn">
+      <HintPath>..\DLL\BillingERPConn.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\MikrotikBulkProcessor\DLL\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp">
+      <HintPath>..\MikrotikBulkProcessor\DLL\RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="tik4net">
+      <HintPath>..\MikrotikBulkProcessor\DLL\tik4net.dll</HintPath>
+    </Reference>
+    <Reference Include="tik4net.objects">
+      <HintPath>..\MikrotikBulkProcessor\DLL\tik4net.objects.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BackgroundServiceManager.cs" />
+    <Compile Include="BLSWIFT.cs" />
+    <Compile Include="BOClientInfo.cs" />
+    <Compile Include="Conversion.cs" />
+    <Compile Include="DASWIFT.cs" />
+    <Compile Include="HttpHelper\DoctimeHttpHelper.cs" />
+    <Compile Include="Model\consultationReportDto.cs" />
+    <Compile Include="Model\DocApiResponse.cs" />
+    <Compile Include="Model\DocTimeApiCALLHistory.cs" />
+    <Compile Include="Model\ProcessorConfig.cs" />
+    <Compile Include="ProcessorList.cs" />
+    <Compile Include="Processors\DocTimeProcessorService.cs" />
+    <Compile Include="Processors\ProcessorConfigService.cs" />
+    <Compile Include="Processors\ReveProcessorService.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utility\MikrotikErrorLogService.cs" />
+    <Compile Include="Utility\ServiceManager.cs" />
+    <Compile Include="Utility\SMSService.cs" />
+    <Compile Include="WriteLogFile.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\MkCommunication\MkCommunication.csproj">
+      <Project>{3DF6C901-1FAD-4FE2-B2DE-751B78D417B7}</Project>
+      <Name>MkCommunication</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
