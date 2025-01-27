@@ -11,6 +11,8 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using BillingProcessor.Models;
+using Newtonsoft.Json;
+using MkCommunication;
 namespace BillingProcessor
 {
     public enum BillingStatus
@@ -42,8 +44,9 @@ namespace BillingProcessor
             DBUtility _idb = new DBUtility();
             Hashtable ht = new Hashtable();
             ht.Add("CustomerID", customerId);
-            var data = _idb.GetDataByProc<CustomerMaster>(ht, "sp_getCustInfoforBillingProcessor");
-            var customer = data.FirstOrDefault();
+          //  var data = _idb.GetO<CustomerMaster>(ht, "sp_getCustInfoforBillingProcessor");
+          
+            var customer = _idb.GetObjectByProc<CustomerMaster>(ht, "sp_getCustInfoforBillingProcessor");
             ht.Clear();
             decimal debit = 0, credit = 0, cl = 0, mrc = 0, dsc = 0;
             DateTime ed = DateTime.MinValue;
@@ -56,6 +59,10 @@ namespace BillingProcessor
             if (totalMrc == 0)
             {
                 mrc = customer.TotalMRC;
+            }
+            else
+            {
+                mrc = totalMrc;
             }
             dsc = customer.Discount;
             ed = customer.EndDate;
@@ -79,6 +86,9 @@ namespace BillingProcessor
             customer.CustomerStatus = customerStatus;
             return (BalanceChecker(debit, credit, cl, mrc, dsc, ed), customer);
         }
+
+      
+
         private static BillingStatus BalanceChecker(decimal debit, decimal credit, decimal cl, decimal totalMrc, decimal dsc, DateTime ed)
         {
 

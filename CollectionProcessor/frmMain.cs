@@ -256,7 +256,7 @@ namespace CollectionProcessor
                                         // MK ON 
                                         try
                                         {
-                                            MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(Hostname, Username, Password, mkVersion, ProtocolID,  Conversion.TryCastInteger(InsType), mkUser, port);
+                                            MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(Hostname, Username, Password, mkVersion, ProtocolID,  Conversion.TryCastInteger(InsType), mkUser);
 
                                             if (objMkConnStatusEnable.StatusCode == "200")
                                             {

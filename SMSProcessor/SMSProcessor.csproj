@@ -52,9 +52,8 @@
     <Reference Include="BillingERPConn">
       <HintPath>..\DLL\BillingERPConn.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\SMSProcessor\DLL\RestSharp.dll</HintPath>
+    <Reference Include="RestSharp">
+      <HintPath>..\DLL\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -74,6 +73,12 @@
       <HintPath>C:\Program Files (x86)\Telerik\Reporting Q3 2013\Bin\Telerik.Reporting.dll</HintPath>
     </Reference>
     <Reference Include="Telerik.ReportViewer.WinForms, Version=7.2.13.1016, Culture=neutral, PublicKeyToken=a9d7983dfcc261be, processorArchitecture=MSIL" />
+    <Reference Include="tik4net">
+      <HintPath>..\DLL\tik4net.dll</HintPath>
+    </Reference>
+    <Reference Include="tik4net.objects">
+      <HintPath>..\DLL\tik4net.objects.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActiveClientList.cs">

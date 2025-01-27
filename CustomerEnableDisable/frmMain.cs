@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections;
-using System.Data;
-using System.Windows.Forms;
-using BillingERPConn;
+﻿using BillingERPConn;
+using CustomerEnableDisable.Utilitys;
 using MkCommunication;
 using SWIFTDailyProcessor;
-using tik4net;
-using tik4net.Objects;
+using System;
+using System.Collections;
+using System.Data;
 using System.Linq;
-using CustomerEnableDisable.Utilitys;
+using System.Windows.Forms;
 
 namespace CustomerEnableDisable
 {
@@ -293,7 +291,7 @@ namespace CustomerEnableDisable
 
                     MkConnection objMkConnection = new MkConnection();
 
-                    MkConnStatus RouterConnectionStatus = objMkConnection.RouterConnectionStatus(hostname, username, password, mkVersion);
+                    MkConnStatus RouterConnectionStatus = objMkConnection.RouterConnectionStatus("118.179.187.152", "iaminvincible", "^.(AbraKaDabra).$", mkVersion);
 
                     //listBox1.Items.Add(RouterConnectionStatus.Status.ToString());
 
@@ -337,128 +335,128 @@ namespace CustomerEnableDisable
             //    GetCommentsDataFromMikroTik(int.Parse(dr["Id"].ToString()));
             //}
 
-            GetCommentsDataFromMikroTik_New();
+          //  GetCommentsDataFromMikroTik_New();
         }
 
-        public void GetCommentsDataFromMikroTik_New()
-        {
+        //public void GetCommentsDataFromMikroTik_New()
+        //{
 
-            var Hostname = "";
-            var Username = "";
-            var Password = "";
-            var popid = "";
+        //    var Hostname = "";
+        //    var Username = "";
+        //    var Password = "";
+        //    var popid = "";
            
-            try
-            {
+        //    try
+        //    {
 
-                using (ITikConnection connection = ConnectionFactory.CreateConnection(TikConnectionType.Api))
-                {
-
-
-                    DataTable dtabpop = new DataTable();
-                    dtabpop = Idb.GetDataBySQLString("Select * From POPWiseRouter Where IsActive=1");
+        //        using (ITikConnection connection = ConnectionFactory.CreateConnection(TikConnectionType.Api))
+        //        {
 
 
-
-                    string ipAddress = "";
-                    string CustomerID = "";
-                    foreach (DataRow dr in dtabpop.Rows)
-                    {
-
-                        Hostname = dr["Host"].ToString();
-                        Username = dr["Username"].ToString();
-                        Password = dr["Password"].ToString();
-                        popid = dr["ID"].ToString();
-                       string mkVersion = dr["mkVersion"].ToString();
-
-                        //DataTable dtabCust = new DataTable();
-                        //dtabCust = Idb.GetDataBySQLString("Select * From CustomerMaster Where RouterId=" + popid + " ");
-
-                        connection.Open(Hostname, Username, Password, mkVersion);
-
-                        var loadCmd = connection.CreateCommandAndParameters("/ip/arp/print");
-                        var response = loadCmd.ExecuteList();
-
-                        int dlngth = response.Count();
-
-                        for (int i = 0; i < dlngth; i++)
-                        {
-                            try
-                            {
-                                var itemId1 = response.ElementAt(i);
-
-                                var disable_status = itemId1.GetResponseField("disabled");
-                                var invalid_status = itemId1.GetResponseField("invalid");
-                                var dynamic_status = itemId1.GetResponseField("dynamic");
-                                ipAddress = itemId1.GetResponseFieldOrDefault("address","");
-                                var comment = itemId1.GetResponseFieldOrDefault("comment", "");
-                                var macAddress = itemId1.GetResponseFieldOrDefault("mac-address", "");
-                                var mkinterface = itemId1.GetResponseFieldOrDefault("interface", "");
-
-                                //  mk_status = mk_status + "disable_status :" + disable_status + " | invalid_status :" + invalid_status + " | dynamic_status :" + dynamic_status;
+        //            DataTable dtabpop = new DataTable();
+        //            dtabpop = Idb.GetDataBySQLString("Select * From POPWiseRouter Where IsActive=1");
 
 
 
+        //            string ipAddress = "";
+        //            string CustomerID = "";
+        //            foreach (DataRow dr in dtabpop.Rows)
+        //            {
+
+        //                Hostname = dr["Host"].ToString();
+        //                Username = dr["Username"].ToString();
+        //                Password = dr["Password"].ToString();
+        //                popid = dr["ID"].ToString();
+        //               string mkVersion = dr["mkVersion"].ToString();
+
+        //                //DataTable dtabCust = new DataTable();
+        //                //dtabCust = Idb.GetDataBySQLString("Select * From CustomerMaster Where RouterId=" + popid + " ");
+
+        //                connection.Open(Hostname, Username, Password);
+
+        //                var loadCmd = connection.CreateCommandAndParameters("/ip/arp/print");
+        //                var response = loadCmd.ExecuteList();
+
+        //                int dlngth = response.Count();
+
+        //                for (int i = 0; i < dlngth; i++)
+        //                {
+        //                    try
+        //                    {
+        //                        var itemId1 = response.ElementAt(i);
+
+        //                        var disable_status = itemId1.GetResponseField("disabled");
+        //                        var invalid_status = itemId1.GetResponseField("invalid");
+        //                        var dynamic_status = itemId1.GetResponseField("dynamic");
+        //                        ipAddress = itemId1.GetResponseFieldOrDefault("address","");
+        //                        var comment = itemId1.GetResponseFieldOrDefault("comment", "");
+        //                        var macAddress = itemId1.GetResponseFieldOrDefault("mac-address", "");
+        //                        var mkinterface = itemId1.GetResponseFieldOrDefault("interface", "");
+
+        //                        //  mk_status = mk_status + "disable_status :" + disable_status + " | invalid_status :" + invalid_status + " | dynamic_status :" + dynamic_status;
 
 
-                                Hashtable ht = new Hashtable();
-                                ht.Add("CustomerId", CustomerID);
-                                ht.Add("IPAddress", ipAddress);
-                                ht.Add("disabled", disable_status);
-                                ht.Add("invalid", invalid_status);
-                                ht.Add("dynamic", dynamic_status);
-                                ht.Add("PopId", popid);
-                                ht.Add("PopIP", Hostname);
-                                ht.Add("Comment", comment);
-                                ht.Add("macaddress", macAddress);
-                                ht.Add("interface", mkinterface);
-
-                                var a = Idb.InsertData(ht, "sp_InsertSOFT_MIKROTIK_STATUS_CMNT");
-                            }
-                            catch (Exception ex)
-                            {
-
-                                string ss = ex.Message.ToString();
-                                continue;
-                            }
-                        }
 
 
-                        if (dlngth == 0)
-                        {
 
-                            Hashtable ht = new Hashtable();
-                            ht.Add("CustomerId", CustomerID);
-                            ht.Add("IPAddress", ipAddress);
-                            ht.Add("disabled", "");
-                            ht.Add("invalid", "");
-                            ht.Add("dynamic", "");
-                            ht.Add("PopId", popid);
-                            ht.Add("PopIP", Hostname);
-                            ht.Add("Comment", "");
-                            ht.Add("macaddress", "");
-                            ht.Add("interface", "");
+        //                        Hashtable ht = new Hashtable();
+        //                        ht.Add("CustomerId", CustomerID);
+        //                        ht.Add("IPAddress", ipAddress);
+        //                        ht.Add("disabled", disable_status);
+        //                        ht.Add("invalid", invalid_status);
+        //                        ht.Add("dynamic", dynamic_status);
+        //                        ht.Add("PopId", popid);
+        //                        ht.Add("PopIP", Hostname);
+        //                        ht.Add("Comment", comment);
+        //                        ht.Add("macaddress", macAddress);
+        //                        ht.Add("interface", mkinterface);
 
-                            var a = Idb.InsertData(ht, "sp_InsertSOFT_MIKROTIK_STATUS_CMNT");
+        //                        var a = Idb.InsertData(ht, "sp_InsertSOFT_MIKROTIK_STATUS_CMNT");
+        //                    }
+        //                    catch (Exception ex)
+        //                    {
 
-                        }
+        //                        string ss = ex.Message.ToString();
+        //                        continue;
+        //                    }
+        //                }
 
-                        connection.Close();
+
+        //                if (dlngth == 0)
+        //                {
+
+        //                    Hashtable ht = new Hashtable();
+        //                    ht.Add("CustomerId", CustomerID);
+        //                    ht.Add("IPAddress", ipAddress);
+        //                    ht.Add("disabled", "");
+        //                    ht.Add("invalid", "");
+        //                    ht.Add("dynamic", "");
+        //                    ht.Add("PopId", popid);
+        //                    ht.Add("PopIP", Hostname);
+        //                    ht.Add("Comment", "");
+        //                    ht.Add("macaddress", "");
+        //                    ht.Add("interface", "");
+
+        //                    var a = Idb.InsertData(ht, "sp_InsertSOFT_MIKROTIK_STATUS_CMNT");
+
+        //                }
+
+        //                connection.Close();
                         
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
 
-                WriteLogFile.WriteLog(popid.ToString() + " :| " + ex.Message.ToString());
-            }
+        //        WriteLogFile.WriteLog(popid.ToString() + " :| " + ex.Message.ToString());
+        //    }
 
 
 
-            lblStatus.Text = "Comments Pull Done";
+        //    lblStatus.Text = "Comments Pull Done";
 
-        }
+        //}
 
 
     }

@@ -1,6 +1,9 @@
 ﻿using BBS.Utilitys;
 using BillingERPConn;
 using BillingProcessor.Models;
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Presentation;
+using DocumentFormat.OpenXml.Spreadsheet;
 using MkCommunication;
 using ReportBilling;
 using SWIFTDailyProcessor;
@@ -9,15 +12,20 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Windows.Forms;
 using System.Xml;
+using Telerik.Reporting;
 using Telerik.Reporting.Processing;
 using Telerik.ReportViewer.WinForms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace BillingProcessor
 {
@@ -37,17 +45,17 @@ namespace BillingProcessor
         private void frmMain_Load(object sender, EventArgs e)
         {
             //  DailyBillingProcessor();
-            //schedule_Timer_Callback();
+            schedule_Timer_Callback();
             // ReminderProcessorDue();
             //LockStatementMailProcessor();
             //DailyBillingProcessor();
-            //MethodToCall();
+            // MethodToCall();
 
             // InactiveToDeviceColl();
 
             // ReminderProcessorDue();
 
-            PackageChangeRequest_Upgrade();
+            //  PackageChangeRequest();
 
         }
 
@@ -148,13 +156,18 @@ namespace BillingProcessor
 
                     if (currentTime == item)
                     {
-                        var strText = "PackageChangeRequest process is starting..";
-                        WriteLogFile.WriteLog(strText);
+                        WriteLogFile.WriteLog("PackageChangeRequest process is starting..");
 
                         PackageChangeRequest();
 
-                        strText = "PackageChangeRequest process has completed";
-                        WriteLogFile.WriteLog(strText);
+                        WriteLogFile.WriteLog("PackageChangeRequest process has completed");
+
+
+                        WriteLogFile.WriteLog("PackageChangeRequest_Upgrade process is starting..");
+
+                        PackageChangeRequest_Upgrade();
+                        WriteLogFile.WriteLog("PackageChangeRequest_Upgrade process has completed");
+
 
                     }
                 }
@@ -1128,7 +1141,7 @@ namespace BillingProcessor
                             mkUser = datarow["MkUser"].ToString();
                             mkVersion = datarow["mkVersion"].ToString();
 
-                            MkConnStatus OBJMkStatus = objMKConnection.MikrotikStatus(Hostname, Username, Password, mkVersion, ProtocolID,  Conversion.TryCastInteger(InsType), mkUser);
+                            MkConnStatus OBJMkStatus = objMKConnection.MikrotikStatus(Hostname, Username, Password, mkVersion, ProtocolID, Conversion.TryCastInteger(InsType), mkUser);
 
                             if (OBJMkStatus.MikrotikStatus == 1)
                             {
@@ -1141,7 +1154,7 @@ namespace BillingProcessor
 
                             // MK OFF, DIscontinue 
 
-                            MkConnStatus objMkConnStatusDisable = objMKConnection.DisableMikrotik(Hostname, Username, Password, mkVersion, ProtocolID,  Conversion.TryCastInteger(InsType), mkUser);
+                            MkConnStatus objMkConnStatusDisable = objMKConnection.DisableMikrotik(Hostname, Username, Password, mkVersion, ProtocolID, Conversion.TryCastInteger(InsType), mkUser);
                             ht = new Hashtable();
                             ht.Add("CustomerID", CustomerID);
                             ht.Add("POPId", RouterID);
@@ -1279,7 +1292,7 @@ namespace BillingProcessor
                             InsType = datarow["InsType"].ToString();
                             mkUser = datarow["MkUser"].ToString();
                             mkVersion = datarow["mkVersion"].ToString();
-                            MkConnStatus OBJMkStatus = objMKConnection.MikrotikStatus(Hostname, Username, Password, mkVersion, ProtocolID   , Conversion.TryCastInteger(InsType), mkUser);
+                            MkConnStatus OBJMkStatus = objMKConnection.MikrotikStatus(Hostname, Username, Password, mkVersion, ProtocolID, Conversion.TryCastInteger(InsType), mkUser);
 
                             if (OBJMkStatus.MikrotikStatus == 1)
                             {
@@ -1374,70 +1387,144 @@ namespace BillingProcessor
         {
             try
             {
-                // MkConnection objMKConnection = new MkConnection();
+                MkConnection objMKConnection = new MkConnection();
 
                 DataTable dtCust = _idb.GetDataByProc("sp_CustomerListForPackageChanged");
                 DateTime ProcessStartTime = DateTime.Now;
                 int NoOfCustomer = dtCust.Rows.Count;
                 int ProcessorID = 0;
-                string CustomerID = "", SMSText = "";
+
                 string SuccessLogBeforeProcess = "", SuccessLogAfterProcess = "", ProcessErrorlog = "", MKLogError = "";
+
 
                 foreach (DataRow dr in dtCust.Rows)
                 {
-                    CustomerID = dr["CustomerID"].ToString();
+                    string CustomerID = dr["CustomerID"].ToString();
                     int balance = Conversion.TryCastInteger(dr["Balance"].ToString());
                     int mrc = Conversion.TryCastInteger(dr["InternetMRC"].ToString());
+                    int downChg = Conversion.TryCastInteger(dr["downChg"].ToString());
+                    int fromStatus = Conversion.TryCastInteger(dr["FromStatusId"].ToString());
 
 
-
-                    SuccessLogBeforeProcess += CustomerID + ", ";
-                    try
+                    int totalDues = downChg + mrc;
+                    (BillingStatus billingStatus, CustomerMaster customer) = BillingService.GetBillingStatus(CustomerID, totalDues);
+                    if (billingStatus == BillingStatus.ExpiredButBalanceAvailable || billingStatus == BillingStatus.NotExpiredButBalanceAvailable)
                     {
-                        string RequestRefNo = dr["RequestRefNo"].ToString();
-                        CustomerID = dr["CustomerID"].ToString();
+                        try
+                        {
+                            string RequestRefNo = dr["RequestRefNo"].ToString();
+                            CustomerID = dr["CustomerID"].ToString();
 
-                        Hashtable ht = new Hashtable();
-                        ht.Add("CustomerID", CustomerID);
-                        ht.Add("ProcessID", 400);
-                        ht.Add("EntryID", PinNumber);
-                        ht.Add("RequestRefNo", RequestRefNo);
+                            Hashtable ht = new Hashtable();
+                            ht.Add("CustomerID", CustomerID);
+                            ht.Add("ProcessID", 400);
+                            ht.Add("EntryID", PinNumber);
+                            ht.Add("RequestRefNo", RequestRefNo);
 
-                        DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChangedfromProcessor");
+                            DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChangedfromProcessor");
 
-                        SuccessLogAfterProcess += CustomerID + ":" + DATA.Rows[0]["SUCCESS"].ToString() + ", ";
+                            SuccessLogAfterProcess += CustomerID + ":" + DATA.Rows[0]["SUCCESS"].ToString() + ", ";
+                        }
+
+                        catch (Exception ex)
+                        {
+
+                            continue;
+                        }
+
+                        if (fromStatus == (int)CustomerStatus.INACTIVE)
+                        {
+
+                            // -----  Bill generation ----------//
+                            var ht = new Hashtable();
+                            ht.Add("CustomerID", CustomerID);
+                            ht.Add("EntryID", PinNumber);
+                            ht.Add("ProcessID", 400);
+                            ht.Add("MRCAmount", mrc);
+                            ht.Add("ActivityDetail", "ACTIVE_FROM_DOWNGRADATION");
+
+                            _idb.GetDataByProc(ht, "sp_BillGeneDuringDailyProcess");
+
+                            if (customer.CustomerStatus == CustomerStatus.INACTIVE)
+                            {
+                                //  Mikrotik Enable Check 
+                                MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(customer.Host, customer.RouterUserName, customer.RouterPassword, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
+                                if (objMkConnStatusEnable.StatusCode == "200")
+                                {
+                                    WriteLogFile.WriteLog(string.Concat(CustomerID, " is activated:"));
+
+                                    ht = new Hashtable();
+                                    ht.Add("CustomerID", CustomerID);
+                                    ht.Add("POPId", customer.RouterId);
+                                    ht.Add("CustomerIP", customer.IPAddress);
+                                    ht.Add("Status", 1);
+                                    ht.Add("ProcessID", 400);
+                                    ht.Add("EntryID", PinNumber);
+
+                                    _idb.InsertData(ht, "sp_insertMKlogNCustStatus");
+                                    ht.Clear();
+
+                                }
+                            }
+                        }
+
                     }
-
-                    catch (Exception ex)
+                    else
                     {
-                        ProcessErrorlog += "ID:" + CustomerID + ", Er. " + ex.ToString() + " #";
-                        continue;
-                    }
+                        if (customer.CustomerStatus == CustomerStatus.ACTIVE)
+                        {
 
+                            MkConnStatus objMkConnStatusDisable = objMKConnection.DisableMikrotik(customer.Host, customer.UserName, customer.Password, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
+
+                            if (objMkConnStatusDisable.StatusCode == "200")
+                            {
+                                WriteLogFile.WriteLog(string.Concat(CustomerID, " is inactivated"));
+                                Hashtable ht = new Hashtable();
+
+                                ht = new Hashtable();
+                                ht.Add("CustomerID", customer.CustomerID);
+                                ht.Add("POPId", customer.RouterId);
+                                ht.Add("CustomerIP", customer.IPAddress);
+                                ht.Add("Status", 0);
+                                ht.Add("StatusID", 9);
+                                ht.Add("ProcessID", 400);
+                                ht.Add("EntryID", PinNumber);
+                                ht.Add("ActivityDetail", "LOCK_FROM_BILLING");
+                                ht.Add("SeconderyStatus", "LOCK_FROM_BILLING");
+
+                                _idb.InsertData(ht, "sp_insertMKlogNCustStatus");
+                                ht.Clear();
+
+
+                            }
+
+                        }
+                    }
                 }
 
-                Hashtable HT = new Hashtable();
-                HT.Add("SuccessLogBeforeProcess", SuccessLogBeforeProcess);
-                HT.Add("SuccessLogAfterProcess", SuccessLogAfterProcess);
-                HT.Add("ProcessErrorlog", ProcessErrorlog);
-                HT.Add("MKLogError", MKLogError);
-                HT.Add("ProcessStartTime", ProcessStartTime);
-                HT.Add("ProcessEndTime", DateTime.Now);
-                HT.Add("NoOfCustomer", NoOfCustomer);
-                HT.Add("ProcessorTypeName", "PackageChangeRequest");
-                HT.Add("ID", 3);
 
-                DataTable PROCESSLOG = _idb.GetDataByProc(HT, "sp_InsertProcessLog");
-                ProcessorID = int.Parse(PROCESSLOG.Rows[0]["PROCSSORLOGID"].ToString());
+                //Hashtable HT = new Hashtable();
+                //HT.Add("SuccessLogBeforeProcess", SuccessLogBeforeProcess);
+                //HT.Add("SuccessLogAfterProcess", SuccessLogAfterProcess);
+                //HT.Add("ProcessErrorlog", ProcessErrorlog);
+                //HT.Add("MKLogError", MKLogError);
+                //HT.Add("ProcessStartTime", ProcessStartTime);
+                //HT.Add("ProcessEndTime", DateTime.Now);
+                //HT.Add("NoOfCustomer", NoOfCustomer);
+                //HT.Add("ProcessorTypeName", "PackageChangeRequest");
+                //HT.Add("ID", 3);
 
-                if (ProcessErrorlog != "" || MKLogError != "")
-                {
-                    SMSText = "Error!! " + " for Request Processor id " + ProcessorID + ", please take the neccessery steps to solve the problem.";
-                    if (_mobileNo != "")
-                    {
-                        SendSMS(CustomerID, SMSText, _mobileNo);
-                    }
-                }
+                //DataTable PROCESSLOG = _idb.GetDataByProc(HT, "sp_InsertProcessLog");
+                //ProcessorID = int.Parse(PROCESSLOG.Rows[0]["PROCSSORLOGID"].ToString());
+
+                //if (ProcessErrorlog != "" || MKLogError != "")
+                //{
+                //    SMSText = "Error!! " + " for Request Processor id " + ProcessorID + ", please take the neccessery steps to solve the problem.";
+                //    if (_mobileNo != "")
+                //    {
+                //        SendSMS(CustomerID, SMSText, _mobileNo);
+                //    }
+                //}
             }
 
             catch (Exception ex)
@@ -1460,37 +1547,28 @@ namespace BillingProcessor
                 Hashtable htFasuki = new Hashtable();
                 htFasuki.Add("Fasuki", "");
 
-                DataTable dtCust = _idb.GetDataByProc(htFasuki, "sp_CustomerListForPackageChanged_Upgradation");
+                var upgradRequests = _idb.GetDataByProc<CustomerUpgradeRequest>(htFasuki, "sp_CustomerListForPackageChanged_Upgradation");
+
                 DateTime ProcessStartTime = DateTime.Now;
-                int NoOfCustomer = dtCust.Rows.Count;
+                int NoOfCustomer = upgradRequests.Count;
                 int ProcessorID = 0;
-                string CustomerID = "", SMSText = "";
+                string SMSText = "";
                 string SuccessLogBeforeProcess = "", SuccessLogAfterProcess = "", MKLogError = "";
 
-                
-                foreach (DataRow dr in dtCust.Rows)
-                {
-                    int mrc = Conversion.TryCastInteger(dr["InternetMRC"].ToString());
-                    CustomerID = dr["CustomerID"].ToString();
 
-                    (BillingStatus billingStatus, CustomerMaster customer) = BillingService.GetBillingStatus(CustomerID, mrc);
+                foreach (CustomerUpgradeRequest request in upgradRequests)
+                {
+                    decimal mrc = request.Amount;
+                    decimal adjAmt = request.BalAfterAdj;
+                    decimal totalDues = mrc + adjAmt;
+                    string CustomerID = request.CustomerID;
+                    string RequestRefNo = request.RequestRefNo;
+                    (BillingStatus billingStatus, CustomerMaster customer) = BillingService.GetBillingStatus(CustomerID, totalDues);
 
                     if (billingStatus == BillingStatus.ExpiredButBalanceAvailable || billingStatus == BillingStatus.NotExpiredButBalanceAvailable)
                     {
-
-                        //int balance = Conversion.TryCastInteger(dr["Balance"].ToString());
-                        //
-                        if (customer.CustomerStatus == CustomerStatus.INACTIVE)
-                        {
-
-                        }
-
-                        SuccessLogBeforeProcess += CustomerID + ", ";
                         try
                         {
-                            string RequestRefNo = dr["RequestRefNo"].ToString();
-                            CustomerID = dr["CustomerID"].ToString();
-
                             Hashtable ht = new Hashtable();
                             ht.Add("CustomerID", CustomerID);
                             ht.Add("ProcessID", 401);
@@ -1498,22 +1576,61 @@ namespace BillingProcessor
                             ht.Add("RequestRefNo", RequestRefNo);
 
                             DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChanged_Upgradation_fromProcessor");
-
-                            SuccessLogAfterProcess += CustomerID + ":" + DATA.Rows[0]["SUCCESS"].ToString() + ", ";
+                            //sp_CustomerPackageChanged_Upgradation_fromProcessor
+                            // SuccessLogAfterProcess += CustomerID + ":" + DATA.Rows[0]["Feedback"].ToString() + ", ";
                         }
 
                         catch (Exception ex)
                         {
-                            ProcessErrorlog += "ID:" + CustomerID + ", Er. " + ex.ToString() + " #";
+                            // ProcessErrorlog += "ID:" + CustomerID + ", Er. " + ex.ToString() + " #";
                             continue;
                         }
+                        //int balance = Conversion.TryCastInteger(dr["Balance"].ToString());
+                        //
+                        if (customer.CustomerStatus == CustomerStatus.INACTIVE)
+                        {
+                            // -----  Bill generation ----------//
+                            var ht = new Hashtable();
+                            ht.Add("CustomerID", CustomerID);
+                            ht.Add("EntryID", PinNumber);
+                            ht.Add("ProcessID", 401);
+                            ht.Add("MRCAmount", mrc);
+                            ht.Add("ActivityDetail", "ACTIVE_FROM_UPGRADATION");
+
+                            _idb.GetDataByProc(ht, "sp_BillGeneDuringDailyProcess");
+
+                            if (customer.CustomerStatus == CustomerStatus.INACTIVE)
+                            {
+                                //  Mikrotik Enable Check 
+                                MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(customer.Host, customer.RouterUserName, customer.RouterPassword, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
+                                if (objMkConnStatusEnable.StatusCode == "200")
+                                {
+                                    WriteLogFile.WriteLog(string.Concat(CustomerID, " is activated:"));
+
+                                    ht = new Hashtable();
+                                    ht.Add("CustomerID", CustomerID);
+                                    ht.Add("POPId", customer.RouterId);
+                                    ht.Add("CustomerIP", customer.IPAddress);
+                                    ht.Add("Status", 1);
+                                    ht.Add("ProcessID", 401);
+                                    ht.Add("EntryID", PinNumber);
+
+                                    _idb.InsertData(ht, "sp_insertMKlogNCustStatus");
+                                    ht.Clear();
+
+                                }
+                            }
+                        }
+
+                        // SuccessLogBeforeProcess += CustomerID + ", ";
+
                     }
                     else
                     {
                         if (customer.CustomerStatus == CustomerStatus.ACTIVE)
                         {
 
-                            MkConnStatus objMkConnStatusDisable = objMKConnection.DisableMikrotik(customer.Host, customer.UserName, customer.Password, customer.MkVersion, customer.ProtocolID,  Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
+                            MkConnStatus objMkConnStatusDisable = objMKConnection.DisableMikrotik(customer.Host, customer.UserName, customer.Password, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
 
                             if (objMkConnStatusDisable.StatusCode == "200")
                             {
@@ -1525,7 +1642,7 @@ namespace BillingProcessor
                                 ht.Add("CustomerIP", customer.IPAddress);
                                 ht.Add("Status", 0);
                                 ht.Add("StatusID", 9);
-                                ht.Add("ProcessID", 100);
+                                ht.Add("ProcessID", 401);
                                 ht.Add("EntryID", PinNumber);
                                 ht.Add("ActivityDetail", "LOCK_FROM_BILLING");
                                 ht.Add("SeconderyStatus", "LOCK_FROM_BILLING");
@@ -1533,7 +1650,7 @@ namespace BillingProcessor
                                 _idb.InsertData(ht, "sp_insertMKlogNCustStatus");
                                 ht.Clear();
                                 //successLogAfterProcess += "ID:" + customerId + ", M:" + netMrc + ", B:" + balance + "CED:" + ced + ", MK:" + "false #";
-                               
+
 
                                 // string dateStr = DateTime.Today.ToString("dd-MMM-yy");
                                 // smsText = "Your Internet has been locked on " + dateStr + ". Pls pay your bill to avoid disconnection. For details visit " + GetCompanyInfo() + ". Pls ignore if already paid";
@@ -1542,8 +1659,8 @@ namespace BillingProcessor
 
                                 //SendSMS(customerId, smsText, mobile);
 
-                              //  SendSMSAfterLock(customer.CustomerID, customer.Mobile, customer.NetMRC);
-                                 
+                                //  SendSMSAfterLock(customer.CustomerID, customer.Mobile, customer.NetMRC);
+
                             }
                         }
 
@@ -1551,28 +1668,28 @@ namespace BillingProcessor
 
                 }
 
-                Hashtable HT = new Hashtable();
-                HT.Add("SuccessLogBeforeProcess", SuccessLogBeforeProcess);
-                HT.Add("SuccessLogAfterProcess", SuccessLogAfterProcess);
-                HT.Add("ProcessErrorlog", ProcessErrorlog);
-                HT.Add("MKLogError", MKLogError);
-                HT.Add("ProcessStartTime", ProcessStartTime);
-                HT.Add("ProcessEndTime", DateTime.Now);
-                HT.Add("NoOfCustomer", NoOfCustomer);
-                HT.Add("ProcessorTypeName", "PackageChangeRequest_Upgrade");
-                HT.Add("ID", 3);
+                //Hashtable HT = new Hashtable();
+                //HT.Add("SuccessLogBeforeProcess", SuccessLogBeforeProcess);
+                //HT.Add("SuccessLogAfterProcess", SuccessLogAfterProcess);
+                //HT.Add("ProcessErrorlog", ProcessErrorlog);
+                //HT.Add("MKLogError", MKLogError);
+                //HT.Add("ProcessStartTime", ProcessStartTime);
+                //HT.Add("ProcessEndTime", DateTime.Now);
+                //HT.Add("NoOfCustomer", NoOfCustomer);
+                //HT.Add("ProcessorTypeName", "PackageChangeRequest_Upgrade");
+                //HT.Add("ID", 3);
 
-                DataTable PROCESSLOG = _idb.GetDataByProc(HT, "sp_InsertProcessLog");
-                ProcessorID = int.Parse(PROCESSLOG.Rows[0]["PROCSSORLOGID"].ToString());
+                //DataTable PROCESSLOG = _idb.GetDataByProc(HT, "sp_InsertProcessLog");
+                //ProcessorID = int.Parse(PROCESSLOG.Rows[0]["PROCSSORLOGID"].ToString());
 
-                if (ProcessErrorlog != "" || MKLogError != "")
-                {
-                    SMSText = "Error!! " + " for Request Processor id " + ProcessorID + ", please take the neccessery steps to solve the problem.";
-                    if (_mobileNo != "")
-                    {
-                        SendSMS(CustomerID, SMSText, _mobileNo);
-                    }
-                }
+                //if (ProcessErrorlog != "" || MKLogError != "")
+                //{
+                //    SMSText = "Error!! " + " for Request Processor id " + ProcessorID + ", please take the neccessery steps to solve the problem.";
+                //    if (_mobileNo != "")
+                //    {
+                //        SendSMS("", SMSText, _mobileNo);
+                //    }
+                //}
             }
 
             catch (Exception ex)
@@ -1713,7 +1830,7 @@ namespace BillingProcessor
                             InsType = datarow["InsType"].ToString();
                             mkUser = datarow["MkUser"].ToString();
                             mkVersion = datarow["mkVersion"].ToString();
-                            MkConnStatus OBJMkStatus = objMKConnection.MikrotikStatus(Hostname, Username, Password, mkVersion, ProtocolID,  Conversion.TryCastInteger(InsType), mkUser);
+                            MkConnStatus OBJMkStatus = objMKConnection.MikrotikStatus(Hostname, Username, Password, mkVersion, ProtocolID, Conversion.TryCastInteger(InsType), mkUser);
 
                             if (OBJMkStatus.MikrotikStatus == 1)
                             {

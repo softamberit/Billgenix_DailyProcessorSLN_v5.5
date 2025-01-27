@@ -33,21 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BillingERPConn, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="BillingERPConn">
       <HintPath>..\DLL\BillingERPConn.dll</HintPath>
-    </Reference>
-    <Reference Include="ClosedXML, Version=0.69.1.0, Culture=neutral, PublicKeyToken=fd1eb21b62ae805b, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLL\ClosedXML.dll</HintPath>
-    </Reference>
-    <Reference Include="DocumentFormat.OpenXml, Version=2.0.5022.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLL\DocumentFormat.OpenXml.dll</HintPath>
-    </Reference>
-    <Reference Include="ExportToExcel, Version=1.0.4107.15628, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLL\ExportToExcel.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -68,6 +55,12 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="tik4net">
+      <HintPath>..\DLL\tik4net.dll</HintPath>
+    </Reference>
+    <Reference Include="tik4net.objects">
+      <HintPath>..\DLL\tik4net.objects.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="frmTempActiveCust.cs">
@@ -118,20 +111,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="DLL\BillingERPConn.dll" />
-    <Content Include="DLL\ClosedXML.dll" />
-    <Content Include="DLL\DocumentFormat.OpenXml.dll" />
-    <Content Include="DLL\ExportToExcel.dll" />
-    <Content Include="DLL\Newtonsoft.Json.dll" />
-    <Content Include="DLL\RestSharp.dll" />
-    <Content Include="DLL\tik4net.dll" />
-    <Content Include="DLL\tik4net.objects.dll" />
-    <Content Include="DLL\tik4net.objects.pdb" />
-    <Content Include="DLL\tik4net.pdb" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\MkCommunication\MkCommunication.csproj">
-      <Project>{3DF6C901-1FAD-4FE2-B2DE-751B78D417B7}</Project>
+      <Project>{3df6c901-1fad-4fe2-b2de-751b78d417b7}</Project>
       <Name>MkCommunication</Name>
     </ProjectReference>
   </ItemGroup>

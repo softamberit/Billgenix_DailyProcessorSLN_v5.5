@@ -49,13 +49,6 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="tik4net, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\CollectionProcessor\DLL\tik4net.dll</HintPath>
-    </Reference>
-    <Reference Include="tik4net.objects">
-      <HintPath>..\MkCommunication\bin\Debug\tik4net.objects.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="frmMain.cs">
@@ -81,6 +74,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -96,7 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MkCommunication\MkCommunication.csproj">
-      <Project>{3DF6C901-1FAD-4FE2-B2DE-751B78D417B7}</Project>
+      <Project>{3df6c901-1fad-4fe2-b2de-751b78d417b7}</Project>
       <Name>MkCommunication</Name>
     </ProjectReference>
   </ItemGroup>

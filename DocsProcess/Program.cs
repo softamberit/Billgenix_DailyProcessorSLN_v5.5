@@ -1,5 +1,4 @@
 ﻿using BillingERPConn;
-using MkCommunication;
 using System;
 using System.Collections;
 using System.Data;
@@ -82,52 +81,6 @@ namespace CustomerDocumentProcess
             
         }
 
-        public void test()
-        {
-            DBUtility dBUtility = new DBUtility();
-
-            // var docs = dBUtility.GetDataBySQLString("Select CustomerID from CustomerMaster Where CustomerID = 'CID-13389'");
-
-
-            Hashtable ht = new Hashtable();
-
-            var CustomerID = "51037";
-
-            ht.Add("CustomerID", CustomerID);
-
-            DataTable dtCustomerInfo = dBUtility.GetDataByProc(ht, "sp_getCustInfoforBillingProcessor");
-            ht.Clear();
-            foreach (DataRow datarow in dtCustomerInfo.Rows)
-            {
-
-                string Hostname = "", Username = "", Password = "", IPAddress = "", Mobile = "", mkVersion = "";
-                string RouterID = ""; decimal NetMRC = 0; int ProtocolID = 0;
-
-                Username = datarow["RouterUserName"].ToString();
-                Password = datarow["Password"].ToString();
-                IPAddress = datarow["IPAddress"].ToString();
-                Hostname = datarow["Host"].ToString();
-                NetMRC = decimal.Parse(datarow["NetMRC"].ToString());
-
-                RouterID = datarow["RouterID"].ToString();
-                ProtocolID = int.Parse(datarow["ProtocolID"].ToString());
-                Mobile = datarow["Mobile"].ToString();
-
-                DateTime CED = DateTime.Parse(datarow["EndDate"].ToString());
-                var InsType = datarow["InsType"].ToString();
-                var mkUser = datarow["MkUser"].ToString();
-                mkVersion = datarow["mkVersion"].ToString();
-
-                MkConnection objMKConnection = new MkConnection();
-
-                MkConnStatus objMkConnStatusDisable = objMKConnection.DisableMikrotik(Hostname, Username, Password, mkVersion, ProtocolID, CustomerID, Convert.ToInt32(InsType), mkUser);
-                Console.WriteLine(objMkConnStatusDisable.RetMessage);
-
-                MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(Hostname, Username, Password, mkVersion, ProtocolID, CustomerID, Convert.ToInt32(InsType), mkUser);
-
-                Console.WriteLine(objMkConnStatusEnable.RetMessage);
-
-            }
-        }
+       
     }
 }

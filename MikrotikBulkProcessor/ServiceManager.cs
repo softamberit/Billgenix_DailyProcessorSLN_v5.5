@@ -46,7 +46,7 @@ namespace MikrotikBulkProcessor
                         var mkVersion = datarow["mkVersion"].ToString();
                         // Console.WriteLine(routerName + " Connecting...");
 
-                        connection.Open(Hostname, Username, Password, mkVersion);
+                        connection.Open(Hostname, Username, Password);
 
                         int installType = 0;
                         // Console.WriteLine(routerName + " Connected");
@@ -450,7 +450,7 @@ namespace MikrotikBulkProcessor
                         router.Host = Hostname;
                         router.mkVersion = mkVersion;
 
-                        connection.Open(Hostname, Username, Password, mkVersion);
+                        connection.Open(Hostname, Username, Password);
                         router.Message = "Login/Ok";
                         router.LogTime = DateTime.Now;
 

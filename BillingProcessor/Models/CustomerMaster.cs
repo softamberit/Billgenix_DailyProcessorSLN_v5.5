@@ -41,4 +41,14 @@ namespace BillingProcessor.Models
         public CustomerStatus CustomerStatus { get; set; }
 
     }
+
+    public class CustomerUpgradeRequest
+    {
+        public string CustomerID { get; set; }
+        public string RequestRefNo { get; set; }
+        public decimal InternetMRC { get; set; }
+        public DateTime EffectiveDate { get; set; }
+        public decimal BalAfterAdj { get; set; }
+        public decimal Amount { get; set; }
+    }
 }

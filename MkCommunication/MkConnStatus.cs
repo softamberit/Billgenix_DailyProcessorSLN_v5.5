@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MkCommunication.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,9 @@ namespace MkCommunication
         public string CodePortion { get; set; }
         public int MikrotikStatus { get; set; }
         public int DLength { get; set; }
+
+        public MkResponse Secret { get; set; }
+
 
     }
 }

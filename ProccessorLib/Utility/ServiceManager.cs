@@ -41,7 +41,7 @@ namespace ProccessorLib
                         var mkVersion = datarow["mkVersion"].ToString();
                         // Console.WriteLine(routerName + " Connecting...");
 
-                        connection.Open(Hostname, Username, Password, "");
+                        connection.Open(Hostname, Username, Password);
                         int installType = 0;
                         // Console.WriteLine(routerName + " Connected");
 

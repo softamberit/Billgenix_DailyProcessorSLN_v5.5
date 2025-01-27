@@ -33,8 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BillingERPConn, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="BillingERPConn">
       <HintPath>..\DLL\BillingERPConn.dll</HintPath>
     </Reference>
     <Reference Include="ClosedXML, Version=0.69.1.0, Culture=neutral, PublicKeyToken=fd1eb21b62ae805b, processorArchitecture=MSIL">
@@ -67,13 +66,11 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="tik4net, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLL\tik4net.dll</HintPath>
+    <Reference Include="tik4net">
+      <HintPath>..\DLL\tik4net.dll</HintPath>
     </Reference>
-    <Reference Include="tik4net.objects, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLL\tik4net.objects.dll</HintPath>
+    <Reference Include="tik4net.objects">
+      <HintPath>..\DLL\tik4net.objects.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
