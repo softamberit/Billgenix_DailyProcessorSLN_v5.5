@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocTimeProcessor", "DocTime
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OTP_SMSProcessor", "OTPSMSProcessor\OTP_SMSProcessor.csproj", "{2F9D0F5C-901B-42B1-8A61-56F7A97701EA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FollowUpMailProcessor", "FollowUpMailProcessor\FollowUpMailProcessor.csproj", "{EF1AA4DB-EF56-4117-A0B2-834144269094}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,10 @@ Global
 		{2F9D0F5C-901B-42B1-8A61-56F7A97701EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F9D0F5C-901B-42B1-8A61-56F7A97701EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F9D0F5C-901B-42B1-8A61-56F7A97701EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF1AA4DB-EF56-4117-A0B2-834144269094}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF1AA4DB-EF56-4117-A0B2-834144269094}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF1AA4DB-EF56-4117-A0B2-834144269094}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF1AA4DB-EF56-4117-A0B2-834144269094}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -132,6 +138,7 @@ Global
 		{228F2304-4706-41E8-B64F-EBAB7D36D006} = {7D87EA75-97B5-4DE4-8F1C-2FAC56B0AA86}
 		{ABA18487-D6E8-435B-B47B-67B4C5A0D753} = {0F9C5841-8DE6-4C1F-840B-F0C0F35BD70E}
 		{2F9D0F5C-901B-42B1-8A61-56F7A97701EA} = {0F9C5841-8DE6-4C1F-840B-F0C0F35BD70E}
+		{EF1AA4DB-EF56-4117-A0B2-834144269094} = {0F9C5841-8DE6-4C1F-840B-F0C0F35BD70E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {032BC80A-EC0F-48FF-9B12-28985FC9DB8A}

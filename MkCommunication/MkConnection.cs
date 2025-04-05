@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using tik4net;
+using tik4net.Objects;
+using tik4net.Objects.Ppp;
 
 namespace MkCommunication
 {
@@ -20,11 +22,11 @@ namespace MkCommunication
 
             try
             {
-                if (mkUser.Contains('-'))
-                {
+                //if (mkUser.Contains('-'))
+                //{
 
-                    mkUser = mkUser.Replace("-", "");
-                }
+                //    mkUser = mkUser.Replace("-", "");
+                //}
 
                 if (InsType == 1)
                 {
@@ -69,7 +71,7 @@ namespace MkCommunication
                 else if (InsType == 2) /// PPPoE
                 {
 
-                    objConnStatus = EnableDisableforPPPoE("true", Hostname, Username, Password, mkVersion,  mkUser, port);
+                    objConnStatus = EnableDisableforPPPoE("true", Hostname, Username, Password, mkVersion, mkUser, port);
                     return objConnStatus;
                 }
 
@@ -95,11 +97,11 @@ namespace MkCommunication
             string message = "";
             try
             {
-                if (mkUser.Contains('-'))
-                {
+                //if (mkUser.Contains('-'))
+                //{
 
-                    mkUser = mkUser.Replace("-", "");
-                }
+                //    mkUser = mkUser.Replace("-", "");
+                //}
 
                 if (InsType == 1)
                 {
@@ -143,7 +145,7 @@ namespace MkCommunication
 
                 else if (InsType == 2)
                 {
-                    objConnStatus = EnableDisableforPPPoE("false", Hostname, Username, Password, mkVersion,  mkUser, port);
+                    objConnStatus = EnableDisableforPPPoE("false", Hostname, Username, Password, mkVersion, mkUser, port);
                     return objConnStatus;
                 }
 
@@ -163,14 +165,14 @@ namespace MkCommunication
             return objConnStatus;
         }
 
-        public MkConnStatus MikrotikStatus(string Hostname, string Username, string Password, string mkVersion, int ProtocolId,  int InsType, string mkUser, int port = 0)
+        public MkConnStatus MikrotikStatus(string Hostname, string Username, string Password, string mkVersion, int ProtocolId, int InsType, string mkUser, int port = 0)
         {
             MkConnStatus objConnStatus = new MkConnStatus();
 
             string message = "";
             try
             {
-                 
+
 
                 if (InsType == 1)
                 {
@@ -225,7 +227,7 @@ namespace MkCommunication
 
                 else if (InsType == 2)
                 {
-                    objConnStatus = FindMKStatusforPPPoE(Hostname, Username, Password, mkVersion,  mkUser, port);
+                    objConnStatus = FindMKStatusforPPPoE(Hostname, Username, Password, mkVersion, mkUser, port);
                     return objConnStatus;
                 }
 
@@ -263,7 +265,7 @@ namespace MkCommunication
             try
             {
 
-                
+
 
                 if (Hostname != "" && Username != "" && Password != "" && ProtocolId != 0)
                 {
@@ -275,7 +277,7 @@ namespace MkCommunication
                         IEnumerable<ITikReSentence> response = null;
                         connection.ReceiveTimeout = 60000;
                         connection.SendTimeout = 60000;
-                        connection.Open(Hostname, port, Username, Password);
+                        connection.Open(Hostname, _defaultPort, Username, Password);
 
                         var loadCmd = connection.CreateCommandAndParameters("/ip/arp/print", "comment", mkUser);
                         // response = loadCmd.ExecuteListWithDuration(waiting_durationInSec);
@@ -370,11 +372,11 @@ namespace MkCommunication
             try
             {
 
-                if (mkUser.Contains('-'))
-                {
+                //if (mkUser.Contains('-'))
+                //{
 
-                    mkUser = mkUser.Replace("-", "");
-                }
+                //    mkUser = mkUser.Replace("-", "");
+                //}
 
 
                 if (Hostname != "" && Username != "" && Password != "" && ProtocolId != 0)
@@ -385,7 +387,7 @@ namespace MkCommunication
                         IEnumerable<ITikReSentence> response = null;
                         connection.ReceiveTimeout = 60000;
                         connection.SendTimeout = 60000;
-                        connection.Open(Hostname, port, Username, Password);
+                        connection.Open(Hostname, _defaultPort, Username, Password);
 
                         var loadCmd = connection.CreateCommandAndParameters("/ipv6/address/print", "comment", mkUser);
                         response = loadCmd.ExecuteList();
@@ -474,11 +476,11 @@ namespace MkCommunication
             try
             {
 
-                if (mkUser.Contains('-'))
-                {
+                //if (mkUser.Contains('-'))
+                //{
 
-                    mkUser = mkUser.Replace("-", "");
-                }
+                //    mkUser = mkUser.Replace("-", "");
+                //}
 
 
                 if (Hostname != "" && Username != "" && Password != "" && ProtocolId != 0)
@@ -489,7 +491,7 @@ namespace MkCommunication
                         IEnumerable<ITikReSentence> response = null;
                         connection.ReceiveTimeout = 60000;
                         connection.SendTimeout = 60000;
-                        connection.Open(Hostname, port, Username, Password);
+                        connection.Open(Hostname, _defaultPort, Username, Password);
 
                         var loadCmd = connection.CreateCommandAndParameters("/ip/arp/print", "comment", mkUser);
                         response = loadCmd.ExecuteList();
@@ -599,11 +601,11 @@ namespace MkCommunication
             try
             {
 
-                if (mkUser.Contains('-'))
-                {
+                //if (mkUser.Contains('-'))
+                //{
 
-                    mkUser = mkUser.Replace("-", "");
-                }
+                //    mkUser = mkUser.Replace("-", "");
+                //}
 
                 if (Hostname != "" && Username != "" && Password != "" && ProtocolId != 0)
                 {
@@ -613,7 +615,7 @@ namespace MkCommunication
                         IEnumerable<ITikReSentence> response = null;
                         connection.ReceiveTimeout = 60000;
                         connection.SendTimeout = 60000;
-                        connection.Open(Hostname, port, Username, Password);
+                        connection.Open(Hostname, _defaultPort, Username, Password);
 
                         var loadCmd = connection.CreateCommandAndParameters("/ipv6/address/print", "comment", mkUser);
                         response = loadCmd.ExecuteList();
@@ -709,7 +711,7 @@ namespace MkCommunication
         }
 
 
-        public MkConnStatus EnableDisableforPPPoE(string Operation, string Hostname, string Username, string Password, string mkVersion,  string mkUser, int port = 0)
+        public MkConnStatus EnableDisableforPPPoE(string Operation, string Hostname, string Username, string Password, string mkVersion, string mkUser, int port = 0)
         {
             MkConnStatus objConnStatus = new MkConnStatus();
 
@@ -723,7 +725,7 @@ namespace MkCommunication
             try
             {
 
-                
+
                 using (ITikConnection connection = ConnectionFactory.CreateConnection(TikConnectionType.Api))
                 {
 
@@ -739,7 +741,7 @@ namespace MkCommunication
                         //connection.SendTimeout = 60000;
 
                         //connection.Open("118.179.187.152",_defaultPort, "iaminvincible", "^.(AbraKaDabra).$");
-                         connection.Open(Hostname.Trim(), _defaultPort, Username.Trim(), Password.Trim());
+                        connection.Open(Hostname.Trim(), _defaultPort, Username.Trim(), Password.Trim());
 
                         IEnumerable<ITikReSentence> sentences = connection.CreateCommandAndParameters("/ppp/secret/print", "name", mkUser).ExecuteList();
                         var mkResponse = MkResponse.Parse(sentences);
@@ -795,12 +797,21 @@ namespace MkCommunication
                             //    connection.CreateCommandAndParameters("/ppp/secret/remove", ".id", item.ID).ExecuteNonQuery();
 
                             //}
-
-                            IEnumerable<ITikReSentence> sentences2 = connection.CreateCommandAndParameters("/ppp/active/print", "name", mkUser).ExecuteList();
-                            var mkResponse2 = MkResponse.Parse(sentences2);
-                            foreach (var item in mkResponse2)
+                            var pppActiveList = connection.LoadAll<PppActive>();
+                            // IEnumerable<ITikReSentence> sentences2 = connection.CreateCommandAndParameters("/ppp/active/print", "name", mkUser).ExecuteList();
+                            //var mkResponse2 = MkResponse.Parse(sentences2);
+                            //foreach (var item in mkResponse2)
+                            //{
+                            //    connection.CreateCommandAndParameters("/ppp/active/remove", ".id", item.ID).ExecuteNonQuery();
+                            //}
+                            if (pppActiveList != null)
                             {
-                                connection.CreateCommandAndParameters("/ppp/active/remove", ".id", item.ID).ExecuteNonQuery();
+                                var pppActive = pppActiveList.SingleOrDefault(s => s.Name == mkUser);
+                                if (pppActive != null && pppActive.Id != null)
+                                {
+                                    connection.CreateCommandAndParameters("/ppp/active/remove", ".id", pppActive.Id).ExecuteNonQuery();
+
+                                }
                             }
 
                             //ITikReSentence activeSentence = connection.CreateCommandAndParameters("/ppp/active/print", "name", mkUser).ExecuteSingleRow();
@@ -865,7 +876,7 @@ namespace MkCommunication
         }
 
 
-        public MkConnStatus FindMKStatusforPPPoE(string Hostname, string Username, string Password, string mkVersion,  string mkUser, int port = 0)
+        public MkConnStatus FindMKStatusforPPPoE(string Hostname, string Username, string Password, string mkVersion, string mkUser, int port = 0)
         {
             MkConnStatus objConnStatus = new MkConnStatus();
 
@@ -873,22 +884,24 @@ namespace MkCommunication
             try
             {
 
-                if (mkUser.Contains('-'))
+                //if (mkUser.Contains('-'))
+                //{
+
+                //    mkUser = mkUser.Replace("-", "");
+                //}
+                if (port == 0)
                 {
-
-                    mkUser = mkUser.Replace("-", "");
+                    port = _defaultPort;
                 }
-
 
                 using (ITikConnection connection = ConnectionFactory.CreateConnection(TikConnectionType.Api))
                 {
-                    connection.ReceiveTimeout = 60000;
-                    connection.SendTimeout = 60000;
+
 
                     IEnumerable<ITikReSentence> response = null;
                     connection.ReceiveTimeout = 60000;
                     connection.SendTimeout = 60000;
-                    connection.Open(Hostname.Trim(), port, Username, Password);
+                    connection.Open(Hostname.Trim(), _defaultPort, Username, Password);
 
                     ITikReSentence secret = connection.CreateCommandAndParameters("/ppp/secret/print", "name", mkUser).ExecuteSingleRow();
 
@@ -990,11 +1003,11 @@ namespace MkCommunication
             try
             {
 
-                if (mkUser.Contains('-'))
-                {
+                //if (mkUser.Contains('-'))
+                //{
 
-                    mkUser = mkUser.Replace("-", "");
-                }
+                //    mkUser = mkUser.Replace("-", "");
+                //}
 
                 using (ITikConnection connection = ConnectionFactory.CreateConnection(TikConnectionType.Api))
                 {

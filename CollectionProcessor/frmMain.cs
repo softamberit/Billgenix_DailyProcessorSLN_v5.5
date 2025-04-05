@@ -40,8 +40,8 @@ namespace CollectionProcessor
         {
 
             schedule_Timer_Callback();
-            // DataTable dtCust = db.GetDataByProc("sp_CustomerListForCollectionProcessor");
-            //DailyCollectionProcessor(dtCust);
+            // DataTable dtCust = db.GetDataByProc("sp_PendingMkErrorForCollectionProcessor");
+            // DailyCollectionProcessor(dtCust);
 
         }
 
@@ -256,7 +256,7 @@ namespace CollectionProcessor
                                         // MK ON 
                                         try
                                         {
-                                            MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(Hostname, Username, Password, mkVersion, ProtocolID,  Conversion.TryCastInteger(InsType), mkUser);
+                                            MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(Hostname, Username, Password, mkVersion, ProtocolID, Conversion.TryCastInteger(InsType), mkUser);
 
                                             if (objMkConnStatusEnable.StatusCode == "200")
                                             {
@@ -320,7 +320,7 @@ namespace CollectionProcessor
                                         {
 
 
-                                            MkConnStatus objMkConnStatusDisable = objMKConnection.DisableMikrotik(Hostname, Username, Password, mkVersion, ProtocolID,  Conversion.TryCastInteger(InsType), mkUser, port);
+                                            MkConnStatus objMkConnStatusDisable = objMKConnection.DisableMikrotik(Hostname, Username, Password, mkVersion, ProtocolID, Conversion.TryCastInteger(InsType), mkUser, port);
 
                                             if (objMkConnStatusDisable.StatusCode == "200")
                                             {
@@ -396,6 +396,8 @@ namespace CollectionProcessor
                                         ht.Add("ProcessID", 200);
                                         ht.Add("MRCAmount", NetMRC);
                                         ht.Add("Narration", "MRC Invoice");
+                                        ht.Add("IsSendSMS", 1);
+
                                         DataTable Insert = dBUtility.GetDataByProc(ht, "sp_MRCInvoiceGeneration");
                                         ht.Clear();
 
@@ -430,8 +432,8 @@ namespace CollectionProcessor
                                                 var custStatus = dResponse.Rows[0]["Feedback"].ToString();
                                                 if (dResponse != null && custStatus == "Customer status changed successfully!")
                                                 {
-                                                    SMSText = @"ধন্যবাদ, আপনার নতুন বিলিং সাইকেল শুরুর তারিখ " + DateTime.Today.ToString("dd/MM/yyyy") + " এবং প্যাকেজ মূল্য টাকা " + NetMRC + ", আমাদের অনলাইন পোর্টাল ব্যবহার করতে লগইন করুন " + getCompanyInfo() + ".";
-                                                    SendSMS(CustomerID, SMSText, Mobile);
+                                                    //    SMSText = @"ধন্যবাদ, আপনার নতুন বিলিং সাইকেল শুরুর তারিখ " + DateTime.Today.ToString("dd/MM/yyyy") + " এবং প্যাকেজ মূল্য টাকা " + NetMRC + ", আমাদের অনলাইন পোর্টাল ব্যবহার করতে লগইন করুন " + getCompanyInfo() + ".";
+                                                    //    SendSMS(CustomerID, SMSText, Mobile);
                                                     //ProcessedStatus = 1 Success full Bill Generation
                                                     DataTable ProcessUpdate = dBUtility.GetDataBySQLString("UPDATE BillingMaster SET IsProcessed = 1,ProcessedStatus = 1 WHERE SNID = '" + SNID + "' SELECT 'SUCCESS' AS SUCCESS");
 
@@ -473,13 +475,79 @@ namespace CollectionProcessor
                                     else
                                     {
                                         // ProcessedStatus=3  insufficient balance
-                                        DataTable ProcessUpdate = dBUtility.GetDataBySQLString("UPDATE BillingMaster SET IsProcessed = 1,ProcessedStatus=3 WHERE SNID = '" + SNID + "' SELECT 'SUCCESS' AS SUCCESS");
-                                        var msg1 = string.Concat(CustomerID, " is not connected for insufficient balance");
+                                        try
+                                        {
 
 
-                                        //var msg1 = CustomerID + " is not connected for insufficient balance";
+                                            MkConnStatus objMkConnStatusDisable = objMKConnection.DisableMikrotik(Hostname, Username, Password, mkVersion, ProtocolID, Conversion.TryCastInteger(InsType), mkUser, port);
 
-                                        WriteLogFile.WriteLog(msg1);
+                                            if (objMkConnStatusDisable.StatusCode == "200")
+                                            {
+                                                ht.Add("CustomerID", CustomerID);
+                                                ht.Add("POPId", int.Parse(RouterID));
+                                                ht.Add("CustomerIP", IPAddress);
+                                                ht.Add("Status", 0);
+                                                ht.Add("StatusID", 9);
+                                                ht.Add("ProcessID", 200);
+                                                ht.Add("EntryID", PinNumber);
+                                                ht.Add("ActivityDetail", "Discontinue_from_DailyProcess");
+                                                ht.Add("SeconderyStatus", "LOCK_FROM_BILLING");
+
+                                                var dResponse = dBUtility.GetDataByProc(ht, "sp_insertMKlogNCustStatus");
+                                                ht.Clear();
+                                                var custStatus = dResponse.Rows[0]["Feedback"].ToString();
+                                                if (dResponse != null && custStatus == "Customer status changed successfully!")
+                                                {
+                                                    SuccessLogBeforeProcess += "ID:" + CustomerID + ", M:" + NetMRC + ", B:" + Balance + "CED:" + CED + ", MK:" + MkStatus + " #";
+                                                    SuccessLogAfterProcess += "ID:" + CustomerID + ", M:" + NetMRC + ", B:" + Balance + "CED:" + CED + ", MK:" + "false #";
+
+                                                    // SMS 
+                                                    // SMSText = @"Sorry! Your Internet connection has been discontinued due to insufficient balance.";
+
+                                                    // ProcessedStatus=3  insufficient balance
+
+                                                    // UPDATE BILLING MASTER IsProcessed=1
+                                                    DataTable ProcessUpdate = dBUtility.GetDataBySQLString("UPDATE BillingMaster SET IsProcessed = 1,ProcessedStatus = 3 WHERE SNID = '" + SNID + "' SELECT 'SUCCESS' AS SUCCESS");
+                                                    var msg1 = string.Concat(CustomerID, " is not connected for insufficient balance");
+                                                    //listBox1.Items.Add(DateTime.Now.ToString("dd-MM-yyyy hh:mm:ss tt") + msg1);
+                                                    WriteLogFile.WriteLog(msg1);
+
+                                                    SMSText = @"অপর্যাপ্ত ব্যালেন্সের কারণে আপনার ইন্টারনেট সংযোগ দিতে ব্যর্থ হয়েছে।";
+
+                                                    SendSMS(CustomerID, SMSText, Mobile);
+                                                }
+                                                else
+                                                {
+                                                    WriteLogFile.WriteLog(CustomerID + "==>" + custStatus);
+
+                                                }
+                                            }
+                                            else if (objMkConnStatusDisable.StatusCode == "240")
+                                            {
+                                                DataTable ProcessUpdate = dBUtility.GetDataBySQLString("UPDATE BillingMaster SET IsProcessed = 1,ProcessedStatus = 3 WHERE SNID = '" + SNID + "' SELECT 'SUCCESS' AS SUCCESS");
+
+                                            }
+
+                                            // Insert MK Error log
+                                            else
+                                            {
+
+
+                                                MKLogError += "I:" + CustomerID + ", Er. " + objMkConnStatusDisable.RetMessage.ToString() + " #";
+                                                InsertMikrotikErrorLog(CustomerID, RouterID, Hostname, IPAddress, objMkConnStatusDisable.RetMessage.ToString(), objMkConnStatusDisable.StatusCode.ToString());
+                                                DataTable ProcessUpdate = dBUtility.GetDataBySQLString("UPDATE BillingMaster SET ProcessedStatus = 2 WHERE SNID = '" + SNID + "' SELECT 'SUCCESS' AS SUCCESS");
+
+                                                WriteLogFile.WriteLog(CustomerID + "==>" + objMkConnStatusDisable.RetMessage.ToString());
+
+                                            }
+                                        }
+                                        catch (Exception rx)
+                                        {
+
+                                            WriteLogFile.WriteLog(CustomerID + "==>" + rx.Message);
+                                        }
+
+
                                     }
                                 }
                             }

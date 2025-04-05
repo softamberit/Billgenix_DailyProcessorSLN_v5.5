@@ -4,6 +4,7 @@ using BillingProcessor.Models;
 using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Presentation;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using MkCommunication;
 using ReportBilling;
 using SWIFTDailyProcessor;
@@ -44,18 +45,20 @@ namespace BillingProcessor
 
         private void frmMain_Load(object sender, EventArgs e)
         {
-            //  DailyBillingProcessor();
+            //DailyBillingProcessor();
             schedule_Timer_Callback();
             // ReminderProcessorDue();
             //LockStatementMailProcessor();
-            //DailyBillingProcessor();
-            // MethodToCall();
+            // DailyBillingProcessor();
+            //MethodToCall();
 
             // InactiveToDeviceColl();
 
             // ReminderProcessorDue();
 
-            //  PackageChangeRequest();
+            //PackageChangeRequest();
+
+            //  PackageChangeRequest_Upgrade();
 
         }
 
@@ -150,27 +153,27 @@ namespace BillingProcessor
                 var currentTime = TimeSpan.Parse(now);
                 // WriteLogFile.WriteLog(startTime.ToString());
 
-                foreach (var item in dwnPrpcessTimes)
+                //foreach (var item in dwnPrpcessTimes)
+                //{
+
+
+                if (today.ToString("mm") == "00" || today.ToString("mm") == "30")
                 {
+                    WriteLogFile.WriteLog("PackageChangeRequest process is starting..");
+
+                    PackageChangeRequest();
+
+                    WriteLogFile.WriteLog("PackageChangeRequest process has completed");
 
 
-                    if (currentTime == item)
-                    {
-                        WriteLogFile.WriteLog("PackageChangeRequest process is starting..");
+                    WriteLogFile.WriteLog("PackageChangeRequest_Upgrade process is starting..");
 
-                        PackageChangeRequest();
-
-                        WriteLogFile.WriteLog("PackageChangeRequest process has completed");
+                    PackageChangeRequest_Upgrade();
+                    WriteLogFile.WriteLog("PackageChangeRequest_Upgrade process has completed");
 
 
-                        WriteLogFile.WriteLog("PackageChangeRequest_Upgrade process is starting..");
-
-                        PackageChangeRequest_Upgrade();
-                        WriteLogFile.WriteLog("PackageChangeRequest_Upgrade process has completed");
-
-
-                    }
                 }
+                //}
 
                 // Regular Process 
                 if (startTime == currentTime)
@@ -220,31 +223,31 @@ namespace BillingProcessor
         {
             string strText = "";
 
+            ////------------------------------------------------------
+            //strText = "PackageChangeRequest process is starting..";
+            //WriteLogFile.WriteLog(strText);
+            ////listBox1.Items.Add(strText);
+
+            //PackageChangeRequest();
+
+            //strText = "PackageChangeRequest process has completed";
+
+
+
+            WriteLogFile.WriteLog(strText);
+            //listBox1.Items.Add(strText);
+
             //------------------------------------------------------
-            strText = "PackageChangeRequest process is starting..";
-            WriteLogFile.WriteLog(strText);
-            //listBox1.Items.Add(strText);
 
-            PackageChangeRequest();
+            //strText = "PackageChangeRequest_Upgrade process is starting..";
+            //WriteLogFile.WriteLog(strText);
+            ////listBox1.Items.Add(strText);
 
-            strText = "PackageChangeRequest process has completed";
+            //PackageChangeRequest_Upgrade();
 
-
-
-            WriteLogFile.WriteLog(strText);
-            //listBox1.Items.Add(strText);
-
-            //------------------------------------------------------
-
-            strText = "PackageChangeRequest_Upgrade process is starting..";
-            WriteLogFile.WriteLog(strText);
-            //listBox1.Items.Add(strText);
-
-            PackageChangeRequest_Upgrade();
-
-            strText = "PackageChangeRequest_Upgrade process has completed";
-            WriteLogFile.WriteLog(strText);
-            //listBox1.Items.Add(strText);
+            //strText = "PackageChangeRequest_Upgrade process has completed";
+            //WriteLogFile.WriteLog(strText);
+            ////listBox1.Items.Add(strText);
 
             //-------------------------------------------------------
 
@@ -594,11 +597,11 @@ namespace BillingProcessor
                                         // successLogBeforeProcess += "ID:" + customerId + ", M:" + netMrc + ", B:" + balance + "CED:" + ced + ", MK:" + MkStatus + " #";
                                         successLogBeforeProcess += customerId + ",";
                                         // SMS 
-                                        string dateStr = DateTime.Today.ToString("MMM dd, yyyy");
+                                        // string dateStr = DateTime.Today.ToString("MMM dd, yyyy");
                                         //smsText = "Your current billing cycle has been started from " + dateStr + " for MRC " + netMrc + " .You can access our online billing on " + GetCompanyInfo() + ".";
-                                        smsText = "ধন্যবাদ, আপনার নতুন বিলিং সাইকেল শুরুর তারিখ " + dateStr + " এবং প্যাকেজ মূল্য টাকা " + netMrc + "। আমাদের অনলাইন পোর্টাল ব্যবহার করতে লগইন করুন " + GetCompanyInfo() + "";
+                                        // smsText = "ধন্যবাদ, আপনার নতুন বিলিং সাইকেল শুরুর তারিখ " + dateStr + " এবং প্যাকেজ মূল্য টাকা " + netMrc + "। আমাদের অনলাইন পোর্টাল ব্যবহার করতে লগইন করুন " + GetCompanyInfo() + "";
 
-                                        SendSMS(customerId, smsText, mobile);
+                                        //SendSMS(customerId, smsText, mobile);
                                         noOfCustomer++;
 
 
@@ -1414,71 +1417,69 @@ namespace BillingProcessor
                         {
 
 
+                            // -----  Bill generation ----------//
+                            //var ht = new Hashtable();
+                            //ht.Add("CustomerID", CustomerID);
+                            //ht.Add("EntryID", PinNumber);
+                            //ht.Add("ProcessID", 400);
+                            //ht.Add("MRCAmount", mrc);
+                            //ht.Add("ActivityDetail", "ACTIVE_FROM_DOWNGRADATION");
 
-                            if (fromStatus == (int)CustomerStatus.INACTIVE)
+                            //_idb.GetDataByProc(ht, "sp_BillGeneDuringDailyProcess");
+
+                            string RequestRefNo = dr["RequestRefNo"].ToString();
+                            CustomerID = dr["CustomerID"].ToString();
+
+                            Hashtable ht = new Hashtable();
+                            ht.Add("CustomerID", CustomerID);
+                            ht.Add("ProcessID", 400);
+                            ht.Add("EntryID", PinNumber);
+                            ht.Add("RequestRefNo", RequestRefNo);
+
+                            DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChangedfromProcessor");
+
+                            if (customer.CustomerStatus == CustomerStatus.INACTIVE)
                             {
-
-                                // -----  Bill generation ----------//
-                                //var ht = new Hashtable();
-                                //ht.Add("CustomerID", CustomerID);
-                                //ht.Add("EntryID", PinNumber);
-                                //ht.Add("ProcessID", 400);
-                                //ht.Add("MRCAmount", mrc);
-                                //ht.Add("ActivityDetail", "ACTIVE_FROM_DOWNGRADATION");
-
-                                //_idb.GetDataByProc(ht, "sp_BillGeneDuringDailyProcess");
-
-                                string RequestRefNo = dr["RequestRefNo"].ToString();
-                                CustomerID = dr["CustomerID"].ToString();
-
-                                Hashtable ht = new Hashtable();
-                                ht.Add("CustomerID", CustomerID);
-                                ht.Add("ProcessID", 400);
-                                ht.Add("EntryID", PinNumber);
-                                ht.Add("RequestRefNo", RequestRefNo);
-
-                                DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChangedfromProcessor");
-
-                                if (customer.CustomerStatus == CustomerStatus.INACTIVE)
+                                //  Mikrotik Enable Check 
+                                MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(customer.Host, customer.RouterUserName, customer.RouterPassword, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
+                                if (objMkConnStatusEnable.StatusCode == "200")
                                 {
-                                    //  Mikrotik Enable Check 
-                                    MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(customer.Host, customer.RouterUserName, customer.RouterPassword, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
-                                    if (objMkConnStatusEnable.StatusCode == "200")
-                                    {
-                                        WriteLogFile.WriteLog(string.Concat(CustomerID, " is activated:"));
+                                    WriteLogFile.WriteLog(string.Concat(CustomerID, " is activated:"));
 
-                                        ht = new Hashtable();
-                                        ht.Add("CustomerID", CustomerID);
-                                        ht.Add("POPId", customer.RouterId);
-                                        ht.Add("CustomerIP", customer.IPAddress);
-                                        ht.Add("Status", 1);
-                                        ht.Add("ProcessID", 400);
-                                        ht.Add("EntryID", PinNumber);
+                                    ht = new Hashtable();
+                                    ht.Add("CustomerID", CustomerID);
+                                    ht.Add("POPId", customer.RouterId);
+                                    ht.Add("CustomerIP", customer.IPAddress);
+                                    ht.Add("Status", 1);
+                                    ht.Add("ProcessID", 400);
+                                    ht.Add("EntryID", PinNumber);
 
-                                        _idb.InsertData(ht, "sp_insertMKlogNCustStatus");
-                                        ht.Clear();
+                                    _idb.InsertData(ht, "sp_insertMKlogNCustStatus");
+                                    ht.Clear();
 
-                                    }
+                                    //DataTable ProcessUpdate = _idb.GetDataBySQLString("UPDATE BillingMaster SET IsProcessed = 1,ProcessedStatus=1 WHERE SNID = '" + SNID + "' SELECT 'SUCCESS' AS SUCCESS");
+
                                 }
+
+                                //}
+                                //else
+                                //{
+                                //    string RequestRefNo = dr["RequestRefNo"].ToString();
+                                //    CustomerID = dr["CustomerID"].ToString();
+
+                                //    Hashtable ht = new Hashtable();
+                                //    ht.Add("CustomerID", CustomerID);
+                                //    ht.Add("ProcessID", 400);
+                                //    ht.Add("EntryID", PinNumber);
+                                //    ht.Add("RequestRefNo", RequestRefNo);
+
+                                //    DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChangedfromProcessor");
+
+                                //}
+
+                                //  SuccessLogAfterProcess += CustomerID + ":" + DATA.Rows[0]["SUCCESS"].ToString() + ", ";
+
                             }
-                            else
-                            {
-                                string RequestRefNo = dr["RequestRefNo"].ToString();
-                                CustomerID = dr["CustomerID"].ToString();
-
-                                Hashtable ht = new Hashtable();
-                                ht.Add("CustomerID", CustomerID);
-                                ht.Add("ProcessID", 400);
-                                ht.Add("EntryID", PinNumber);
-                                ht.Add("RequestRefNo", RequestRefNo);
-
-                                DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChangedfromProcessor");
-
-                            }
-
-                            //  SuccessLogAfterProcess += CustomerID + ":" + DATA.Rows[0]["SUCCESS"].ToString() + ", ";
-
-
 
                         }
                         else
@@ -1491,21 +1492,21 @@ namespace BillingProcessor
                                 if (objMkConnStatusDisable.StatusCode == "200")
                                 {
                                     WriteLogFile.WriteLog(string.Concat(CustomerID, " is inactivated"));
-                                    Hashtable ht = new Hashtable();
+                                    Hashtable ht2 = new Hashtable();
 
-                                    ht = new Hashtable();
-                                    ht.Add("CustomerID", customer.CustomerID);
-                                    ht.Add("POPId", customer.RouterId);
-                                    ht.Add("CustomerIP", customer.IPAddress);
-                                    ht.Add("Status", 0);
-                                    ht.Add("StatusID", 9);
-                                    ht.Add("ProcessID", 400);
-                                    ht.Add("EntryID", PinNumber);
-                                    ht.Add("ActivityDetail", "LOCK_FROM_BILLING");
-                                    ht.Add("SeconderyStatus", "LOCK_FROM_BILLING");
+                                    ht2 = new Hashtable();
+                                    ht2.Add("CustomerID", customer.CustomerID);
+                                    ht2.Add("POPId", customer.RouterId);
+                                    ht2.Add("CustomerIP", customer.IPAddress);
+                                    ht2.Add("Status", 0);
+                                    ht2.Add("StatusID", 9);
+                                    ht2.Add("ProcessID", 400);
+                                    ht2.Add("EntryID", PinNumber);
+                                    ht2.Add("ActivityDetail", "LOCK_FROM_BILLING");
+                                    ht2.Add("SeconderyStatus", "LOCK_FROM_BILLING");
 
-                                    _idb.InsertData(ht, "sp_insertMKlogNCustStatus");
-                                    ht.Clear();
+                                    _idb.InsertData(ht2, "sp_insertMKlogNCustStatus");
+                                    ht2.Clear();
 
 
                                 }

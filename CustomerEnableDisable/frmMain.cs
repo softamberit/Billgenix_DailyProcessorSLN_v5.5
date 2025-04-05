@@ -372,7 +372,8 @@ namespace CustomerEnableDisable
         //                //DataTable dtabCust = new DataTable();
         //                //dtabCust = Idb.GetDataBySQLString("Select * From CustomerMaster Where RouterId=" + popid + " ");
 
-        //                connection.Open(Hostname, Username, Password);
+        //
+        //               (Hostname, Username, Password);
 
         //                var loadCmd = connection.CreateCommandAndParameters("/ip/arp/print");
         //                var response = loadCmd.ExecuteList();
