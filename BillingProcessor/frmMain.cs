@@ -46,7 +46,7 @@ namespace BillingProcessor
         private void frmMain_Load(object sender, EventArgs e)
         {
             //DailyBillingProcessor();
-            schedule_Timer_Callback();
+            //schedule_Timer_Callback();
             // ReminderProcessorDue();
             //LockStatementMailProcessor();
             // DailyBillingProcessor();
@@ -58,7 +58,7 @@ namespace BillingProcessor
 
             //PackageChangeRequest();
 
-            //  PackageChangeRequest_Upgrade();
+             PackageChangeRequest_Upgrade();
 
         }
 
@@ -1582,7 +1582,7 @@ namespace BillingProcessor
                     {
                         decimal mrc = request.Amount;
                         decimal adjAmt = request.BalAfterAdj;
-                        decimal totalDues = mrc + adjAmt;
+                        decimal totalDues = mrc - adjAmt;
                         string CustomerID = request.CustomerID;
                         string RequestRefNo = request.RequestRefNo;
                         (BillingStatus billingStatus, CustomerMaster customer) = BillingService.GetBillingStatus(CustomerID, totalDues);
