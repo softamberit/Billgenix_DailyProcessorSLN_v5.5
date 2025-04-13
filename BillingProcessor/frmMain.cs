@@ -49,16 +49,16 @@ namespace BillingProcessor
             schedule_Timer_Callback();
             // ReminderProcessorDue();
             //LockStatementMailProcessor();
-            // DailyBillingProcessor();
+            //DailyBillingProcessor();
             //MethodToCall();
 
             // InactiveToDeviceColl();
 
             // ReminderProcessorDue();
 
-            //PackageChangeRequest();
+             // PackageChangeRequest();
 
-            //  PackageChangeRequest_Upgrade();
+             // PackageChangeRequest_Upgrade();
 
         }
 
@@ -573,7 +573,7 @@ namespace BillingProcessor
 
                                             // mkLogError += "I:" + customerId + ", Er. " + objMkConnStatusDisable.RetMessage + " #";
                                             mkLogError += customerId + ",";
-                                            InsertMikrotikErrorLog(customerId, routerId, hostname, ipAddress, objMkConnStatusDisable.RetMessage, objMkConnStatusDisable.StatusCode);
+                                            InsertMikrotikErrorLog(customerId, routerId, hostname, ipAddress, objMkConnStatusDisable.RetMessage, objMkConnStatusDisable.StatusCode, 100);
                                             WriteLogFile.WriteLog(string.Concat(customerId, " Error:", objMkConnStatusDisable.RetMessage));
 
                                         }
@@ -641,7 +641,7 @@ namespace BillingProcessor
                                             mkLogError += customerId + ",";
 
                                             // mkLogError += "I:" + customerId + ", Er. " + objMkConnStatusEnable.RetMessage + " #";
-                                            InsertMikrotikErrorLog(customerId, routerId, hostname, ipAddress, objMkConnStatusEnable.RetMessage, objMkConnStatusEnable.StatusCode);
+                                            InsertMikrotikErrorLog(customerId, routerId, hostname, ipAddress, objMkConnStatusEnable.RetMessage, objMkConnStatusEnable.StatusCode, 100);
                                             WriteLogFile.WriteLog(string.Concat(customerId, " Error:", objMkConnStatusEnable.RetMessage));
 
                                         }
@@ -707,7 +707,7 @@ namespace BillingProcessor
                                             // mkLogError += "I:" + customerId + ", Er. " + objMkConnStatusDisable.RetMessage + " #";
                                             mkLogError += customerId + ",";
                                             WriteLogFile.WriteLog(string.Concat(customerId, " Error:", objMkConnStatusDisable.RetMessage));
-                                            InsertMikrotikErrorLog(customerId, routerId, hostname, ipAddress, objMkConnStatusDisable.RetMessage, objMkConnStatusDisable.StatusCode);
+                                            InsertMikrotikErrorLog(customerId, routerId, hostname, ipAddress, objMkConnStatusDisable.RetMessage, objMkConnStatusDisable.StatusCode, 100);
                                         }
                                     }
                                 }
@@ -882,7 +882,7 @@ namespace BillingProcessor
                             {
                                 // MKLogError += "I:" + CustomerID + ", Er. " + objMkConnStatusDisable.RetMessage.ToString() + " #";
                                 MKLogError += CustomerID + ",";
-                                InsertMikrotikErrorLog(CustomerID, RouterID, Hostname, IPAddress, objMkConnStatusDisable.RetMessage.ToString(), objMkConnStatusDisable.StatusCode.ToString());
+                                InsertMikrotikErrorLog(CustomerID, RouterID, Hostname, IPAddress, objMkConnStatusDisable.RetMessage.ToString(), objMkConnStatusDisable.StatusCode.ToString(), 301);
                             }
                         }
                     }
@@ -1036,7 +1036,7 @@ namespace BillingProcessor
                             else
                             {
                                 MKLogError += "I:" + CustomerID + ", Er. " + objMkConnStatusDisable.RetMessage.ToString() + " #";
-                                InsertMikrotikErrorLog(CustomerID, RouterID, Hostname, IPAddress, objMkConnStatusDisable.RetMessage.ToString(), objMkConnStatusDisable.StatusCode.ToString());
+                                InsertMikrotikErrorLog(CustomerID, RouterID, Hostname, IPAddress, objMkConnStatusDisable.RetMessage.ToString(), objMkConnStatusDisable.StatusCode.ToString(), 302);
                             }
                         }
                     }
@@ -1188,7 +1188,7 @@ namespace BillingProcessor
                             else
                             {
                                 MKLogError += "I:" + CustomerID + ", Er. " + objMkConnStatusDisable.RetMessage.ToString() + " #";
-                                InsertMikrotikErrorLog(CustomerID, RouterID, Hostname, IPAddress, objMkConnStatusDisable.RetMessage.ToString(), objMkConnStatusDisable.StatusCode.ToString());
+                                InsertMikrotikErrorLog(CustomerID, RouterID, Hostname, IPAddress, objMkConnStatusDisable.RetMessage.ToString(), objMkConnStatusDisable.StatusCode.ToString(), 303);
                             }
                         }
                     }
@@ -1337,7 +1337,7 @@ namespace BillingProcessor
                             else
                             {
                                 MKLogError += "I:" + CustomerID + ", Er. " + objMkConnStatusDisable.RetMessage.ToString() + " #";
-                                InsertMikrotikErrorLog(CustomerID, RouterID, Hostname, IPAddress, objMkConnStatusDisable.RetMessage.ToString(), objMkConnStatusDisable.StatusCode.ToString());
+                                InsertMikrotikErrorLog(CustomerID, RouterID, Hostname, IPAddress, objMkConnStatusDisable.RetMessage.ToString(), objMkConnStatusDisable.StatusCode.ToString(), 304);
                             }
                         }
                     }
@@ -1430,88 +1430,86 @@ namespace BillingProcessor
                             string RequestRefNo = dr["RequestRefNo"].ToString();
                             CustomerID = dr["CustomerID"].ToString();
 
-                            Hashtable ht = new Hashtable();
-                            ht.Add("CustomerID", CustomerID);
-                            ht.Add("ProcessID", 400);
-                            ht.Add("EntryID", PinNumber);
-                            ht.Add("RequestRefNo", RequestRefNo);
+                          
 
-                            DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChangedfromProcessor");
-
-                            if (customer.CustomerStatus == CustomerStatus.INACTIVE)
+                            //if (customer.CustomerStatus == CustomerStatus.INACTIVE || customer.CustomerStatus == CustomerStatus.DISCONTINUE)
+                            //{
+                            //  Mikrotik Enable Check 
+                            MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(customer.Host, customer.RouterUserName, customer.RouterPassword, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
+                            if (objMkConnStatusEnable.StatusCode == "200")
                             {
-                                //  Mikrotik Enable Check 
-                                MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(customer.Host, customer.RouterUserName, customer.RouterPassword, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
-                                if (objMkConnStatusEnable.StatusCode == "200")
-                                {
-                                    WriteLogFile.WriteLog(string.Concat(CustomerID, " is activated:"));
+                                Hashtable ht = new Hashtable();
+                                ht.Add("CustomerID", CustomerID);
+                                ht.Add("ProcessID", 400);
+                                ht.Add("EntryID", PinNumber);
+                                ht.Add("RequestRefNo", RequestRefNo);
 
-                                    ht = new Hashtable();
-                                    ht.Add("CustomerID", CustomerID);
-                                    ht.Add("POPId", customer.RouterId);
-                                    ht.Add("CustomerIP", customer.IPAddress);
-                                    ht.Add("Status", 1);
-                                    ht.Add("ProcessID", 400);
-                                    ht.Add("EntryID", PinNumber);
+                                DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChangedfromProcessor");
 
-                                    _idb.InsertData(ht, "sp_insertMKlogNCustStatus");
-                                    ht.Clear();
+                                WriteLogFile.WriteLog(string.Concat(CustomerID, " is activated:"));
 
-                                    //DataTable ProcessUpdate = _idb.GetDataBySQLString("UPDATE BillingMaster SET IsProcessed = 1,ProcessedStatus=1 WHERE SNID = '" + SNID + "' SELECT 'SUCCESS' AS SUCCESS");
+                                ht = new Hashtable();
+                                ht.Add("CustomerID", CustomerID);
+                                ht.Add("POPId", customer.RouterId);
+                                ht.Add("CustomerIP", customer.IPAddress);
+                                ht.Add("Status", 1);
+                                ht.Add("ProcessID", 400);
+                                ht.Add("EntryID", PinNumber);
 
-                                }
+                                _idb.InsertData(ht, "sp_insertMKlogNCustStatus");
+                                ht.Clear();
 
-                                //}
-                                //else
-                                //{
-                                //    string RequestRefNo = dr["RequestRefNo"].ToString();
-                                //    CustomerID = dr["CustomerID"].ToString();
-
-                                //    Hashtable ht = new Hashtable();
-                                //    ht.Add("CustomerID", CustomerID);
-                                //    ht.Add("ProcessID", 400);
-                                //    ht.Add("EntryID", PinNumber);
-                                //    ht.Add("RequestRefNo", RequestRefNo);
-
-                                //    DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChangedfromProcessor");
-
-                                //}
-
-                                //  SuccessLogAfterProcess += CustomerID + ":" + DATA.Rows[0]["SUCCESS"].ToString() + ", ";
+                                //DataTable ProcessUpdate = _idb.GetDataBySQLString("UPDATE BillingMaster SET IsProcessed = 1,ProcessedStatus=1 WHERE SNID = '" + SNID + "' SELECT 'SUCCESS' AS SUCCESS");
 
                             }
+                            else
+                            {
+                                InsertMikrotikErrorLog(CustomerID, customer.RouterId, customer.Host, customer.IPAddress, objMkConnStatusEnable.RetMessage, objMkConnStatusEnable.StatusCode, 400);
+
+                            }
+
+
+
+                            //}
 
                         }
                         else
                         {
-                            if (customer.CustomerStatus == CustomerStatus.ACTIVE)
+                            //if (customer.CustomerStatus == CustomerStatus.ACTIVE)
+                            //{
+
+                            MkConnStatus objMkConnStatusDisable = objMKConnection.DisableMikrotik(customer.Host, customer.UserName, customer.Password, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
+
+                            if (objMkConnStatusDisable.StatusCode == "200")
                             {
+                                WriteLogFile.WriteLog(string.Concat(CustomerID, " is inactivated"));
+                                Hashtable ht2 = new Hashtable();
 
-                                MkConnStatus objMkConnStatusDisable = objMKConnection.DisableMikrotik(customer.Host, customer.UserName, customer.Password, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
+                                ht2 = new Hashtable();
+                                ht2.Add("CustomerID", customer.CustomerID);
+                                ht2.Add("POPId", customer.RouterId);
+                                ht2.Add("CustomerIP", customer.IPAddress);
+                                ht2.Add("Status", 0);
+                                ht2.Add("StatusID", 9);
+                                ht2.Add("ProcessID", 400);
+                                ht2.Add("EntryID", PinNumber);
+                                ht2.Add("ActivityDetail", "LOCK_FROM_BILLING");
+                                ht2.Add("SeconderyStatus", "LOCK_FROM_BILLING");
 
-                                if (objMkConnStatusDisable.StatusCode == "200")
-                                {
-                                    WriteLogFile.WriteLog(string.Concat(CustomerID, " is inactivated"));
-                                    Hashtable ht2 = new Hashtable();
+                                _idb.InsertData(ht2, "sp_insertMKlogNCustStatus");
+                                ht2.Clear();
 
-                                    ht2 = new Hashtable();
-                                    ht2.Add("CustomerID", customer.CustomerID);
-                                    ht2.Add("POPId", customer.RouterId);
-                                    ht2.Add("CustomerIP", customer.IPAddress);
-                                    ht2.Add("Status", 0);
-                                    ht2.Add("StatusID", 9);
-                                    ht2.Add("ProcessID", 400);
-                                    ht2.Add("EntryID", PinNumber);
-                                    ht2.Add("ActivityDetail", "LOCK_FROM_BILLING");
-                                    ht2.Add("SeconderyStatus", "LOCK_FROM_BILLING");
-
-                                    _idb.InsertData(ht2, "sp_insertMKlogNCustStatus");
-                                    ht2.Clear();
-
-
-                                }
 
                             }
+                            else
+                            {
+
+                                InsertMikrotikErrorLog(CustomerID, customer.RouterId, customer.Host, customer.IPAddress, objMkConnStatusDisable.RetMessage, objMkConnStatusDisable.StatusCode, 400);
+
+
+                            }
+
+                            //}
                         }
                     }
 
@@ -1580,12 +1578,19 @@ namespace BillingProcessor
                 {
                     try
                     {
+
+                        
                         decimal mrc = request.Amount;
                         decimal adjAmt = request.BalAfterAdj;
-                        decimal totalDues = mrc + adjAmt;
+                        decimal totalDues = mrc - adjAmt;
                         string CustomerID = request.CustomerID;
                         string RequestRefNo = request.RequestRefNo;
                         (BillingStatus billingStatus, CustomerMaster customer) = BillingService.GetBillingStatus(CustomerID, totalDues);
+                        if(CustomerID== "723967")
+                        {
+
+                        }
+
 
                         if (billingStatus == BillingStatus.ExpiredButBalanceAvailable || billingStatus == BillingStatus.NotExpiredButBalanceAvailable)
                         {
@@ -1595,18 +1600,27 @@ namespace BillingProcessor
 
                             //int balance = Conversion.TryCastInteger(dr["Balance"].ToString());
                             //
-                            if (customer.CustomerStatus == CustomerStatus.INACTIVE)
+                            //if (customer.CustomerStatus == CustomerStatus.INACTIVE)
+                            //{
+                            //// -----  Bill generation ----------//
+                            //var ht = new Hashtable();
+                            //ht.Add("CustomerID", CustomerID);
+                            //ht.Add("EntryID", PinNumber);
+                            //ht.Add("ProcessID", 401);
+                            //ht.Add("MRCAmount", mrc);
+                            //ht.Add("ActivityDetail", "ACTIVE_FROM_UPGRADATION");
+
+                            //_idb.GetDataByProc(ht, "sp_BillGeneDuringDailyProcess");
+
+
+                            
+
+                            //if (customer.CustomerStatus == CustomerStatus.INACTIVE)
+                            //{
+                            //  Mikrotik Enable Check 
+                            MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(customer.Host, customer.RouterUserName, customer.RouterPassword, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
+                            if (objMkConnStatusEnable.StatusCode == "200")
                             {
-                                //// -----  Bill generation ----------//
-                                //var ht = new Hashtable();
-                                //ht.Add("CustomerID", CustomerID);
-                                //ht.Add("EntryID", PinNumber);
-                                //ht.Add("ProcessID", 401);
-                                //ht.Add("MRCAmount", mrc);
-                                //ht.Add("ActivityDetail", "ACTIVE_FROM_UPGRADATION");
-
-                                //_idb.GetDataByProc(ht, "sp_BillGeneDuringDailyProcess");
-
 
                                 Hashtable ht = new Hashtable();
                                 ht.Add("CustomerID", CustomerID);
@@ -1616,52 +1630,52 @@ namespace BillingProcessor
 
                                 DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChanged_Upgradation_fromProcessor");
 
-                                if (customer.CustomerStatus == CustomerStatus.INACTIVE)
-                                {
-                                    //  Mikrotik Enable Check 
-                                    MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(customer.Host, customer.RouterUserName, customer.RouterPassword, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
-                                    if (objMkConnStatusEnable.StatusCode == "200")
-                                    {
-                                        WriteLogFile.WriteLog(string.Concat(CustomerID, " is activated:"));
+                                WriteLogFile.WriteLog(string.Concat(CustomerID, " is activated:"));
 
-                                        ht = new Hashtable();
-                                        ht.Add("CustomerID", CustomerID);
-                                        ht.Add("POPId", customer.RouterId);
-                                        ht.Add("CustomerIP", customer.IPAddress);
-                                        ht.Add("Status", 1);
-                                        ht.Add("ProcessID", 401);
-                                        ht.Add("EntryID", PinNumber);
+                                ht = new Hashtable();
+                                ht.Add("CustomerID", CustomerID);
+                                ht.Add("POPId", customer.RouterId);
+                                ht.Add("CustomerIP", customer.IPAddress);
+                                ht.Add("Status", 1);
+                                ht.Add("ProcessID", 401);
+                                ht.Add("EntryID", PinNumber);
 
-                                        _idb.InsertData(ht, "sp_insertMKlogNCustStatus");
-                                        ht.Clear();
+                                _idb.InsertData(ht, "sp_insertMKlogNCustStatus");
+                                ht.Clear();
 
-                                    }
-                                    else
-                                    {
-                                        InsertMikrotikErrorLog(CustomerID, customer.RouterId, customer.Host, customer.IPAddress, objMkConnStatusEnable.RetMessage, objMkConnStatusEnable.StatusCode);
-                                        WriteLogFile.WriteLog(string.Concat(CustomerID, " Error:", objMkConnStatusEnable.RetMessage));
-                                    }
-                                }
                             }
                             else
                             {
-
-                                Hashtable ht = new Hashtable();
-                                ht.Add("CustomerID", CustomerID);
-                                ht.Add("ProcessID", 401);
-                                ht.Add("EntryID", PinNumber);
-                                ht.Add("RequestRefNo", RequestRefNo);
-
-                                DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChanged_Upgradation_fromProcessor");
+                                InsertMikrotikErrorLog(CustomerID, customer.RouterId, customer.Host, customer.IPAddress, objMkConnStatusEnable.RetMessage, objMkConnStatusEnable.StatusCode, 401);
+                                WriteLogFile.WriteLog(string.Concat(CustomerID, " Error:", objMkConnStatusEnable.RetMessage));
                             }
+                            //}
+                            //}
+                            //else
+                            //{
+
+                            //    Hashtable ht = new Hashtable();
+                            //    ht.Add("CustomerID", CustomerID);
+                            //    ht.Add("ProcessID", 401);
+                            //    ht.Add("EntryID", PinNumber);
+                            //    ht.Add("RequestRefNo", RequestRefNo);
+
+                            //    DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChanged_Upgradation_fromProcessor");
+                            //}
 
                             // SuccessLogBeforeProcess += CustomerID + ", ";
 
                         }
                         else
                         {
-                            if (customer.CustomerStatus == CustomerStatus.ACTIVE)
+                            //if (customer.CustomerStatus == CustomerStatus.ACTIVE)
+                            //{
+
+                            var mkStatus = objMKConnection.MikrotikStatus(customer.Host, customer.UserName, customer.Password, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
+                            if (mkStatus.StatusCode == "200" && mkStatus.MikrotikStatus == 1)
                             {
+
+
 
                                 MkConnStatus objMkConnStatusDisable = objMKConnection.DisableMikrotik(customer.Host, customer.UserName, customer.Password, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
 
@@ -1694,6 +1708,11 @@ namespace BillingProcessor
 
                                     //  SendSMSAfterLock(customer.CustomerID, customer.Mobile, customer.NetMRC);
 
+                                }
+                                else
+                                {
+                                    InsertMikrotikErrorLog(CustomerID, customer.RouterId, customer.Host, customer.IPAddress, objMkConnStatusDisable.RetMessage, objMkConnStatusDisable.StatusCode, 401);
+                                    WriteLogFile.WriteLog(string.Concat(CustomerID, " Error:", objMkConnStatusDisable.RetMessage));
                                 }
                             }
 
@@ -1914,7 +1933,7 @@ namespace BillingProcessor
                                 else
                                 {
                                     MKLogError += "I:" + CustomerID + ", Er. " + objMkConnStatusDisable.RetMessage.ToString() + " #";
-                                    InsertMikrotikErrorLog(CustomerID, RouterID, Hostname, IPAddress, objMkConnStatusDisable.RetMessage.ToString(), objMkConnStatusDisable.StatusCode.ToString());
+                                    InsertMikrotikErrorLog(CustomerID, RouterID, Hostname, IPAddress, objMkConnStatusDisable.RetMessage.ToString(), objMkConnStatusDisable.StatusCode.ToString(), 306);
                                 }
                             }
 
@@ -2256,7 +2275,7 @@ namespace BillingProcessor
         #endregion
 
         #region InsertMikrotikErrorLog
-        public void InsertMikrotikErrorLog(string CustomerID, int RouterID, string Hostname, string IPAddress, string RetMessage, string Statuscode)
+        public void InsertMikrotikErrorLog(string CustomerID, int RouterID, string Hostname, string IPAddress, string RetMessage, string Statuscode, int proccesId)
         {
 
             Hashtable ht = new Hashtable();
@@ -2265,7 +2284,7 @@ namespace BillingProcessor
             ht.Add("POPId", RouterID);
             ht.Add("CustomerIP", IPAddress);
             ht.Add("Error_description", RetMessage);
-            ht.Add("ProcessID", 100);
+            ht.Add("ProcessID", proccesId);
 
             ht.Add("EntryID", PinNumber);
             //ht.Add("IPAddress", IPAddress);
