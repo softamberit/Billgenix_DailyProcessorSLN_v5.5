@@ -52,6 +52,9 @@
     <Reference Include="BillingERPConn">
       <HintPath>..\DLL\BillingERPConn.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio\Shared\SDKs\Azure\v2.9\ToolsRef\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="RestSharp">
       <HintPath>..\DLL\RestSharp.dll</HintPath>
     </Reference>
