@@ -45,20 +45,21 @@ namespace BillingProcessor
 
         private void frmMain_Load(object sender, EventArgs e)
         {
-            //DailyBillingProcessor();
-            schedule_Timer_Callback();
-            // ReminderProcessorDue();
+            // DailyBillingProcessor();
+          //   schedule_Timer_Callback();
+            // ReminderProcessorDue();`
             //LockStatementMailProcessor();
-            //DailyBillingProcessor();
-            //MethodToCall();
+            // DailyBillingProcessor();
+            // MethodToCall();
 
             // InactiveToDeviceColl();
 
             // ReminderProcessorDue();
 
-             // PackageChangeRequest();
 
-             // PackageChangeRequest_Upgrade();
+           //PackageChangeRequest();
+
+             PackageChangeRequest_Upgrade();
 
         }
 
@@ -67,16 +68,19 @@ namespace BillingProcessor
         public int ProcessInterval;
         string startHour = "";
         int endHour = 0;
-        List<TimeSpan> dwnPrpcessTimes = new List<TimeSpan>();
+        //List<TimeSpan> dwnPrpcessTimes = new List<TimeSpan>();
         private void schedule_Timer_Callback()
         {
 
-            string strText = DateTime.Now.ToString("dd-MM-yyyy hh:mm:ss:ffff tt");
-            WriteLogFile.WriteLog(strText);
+
 
             //listBox1.Items.Add(strText);
 
             LoadProcessConfig();
+
+
+            WriteLogFile.WriteLog("Billing Processor Starting Time Is : " + startHour);
+
 
             //timer1.Interval = startMiliSeconds;  // millisecond
 
@@ -91,33 +95,85 @@ namespace BillingProcessor
 
             //if (currHour >= startHour && currHour <= endHour)
             //{
-            timer1.Interval = 1000 * 60;
+            timer1.Interval = 1000 * 50;
             timer1.Enabled = true;
             timer1.Tick += OnTimerEvent;
 
-            TimeSpan dwnPrpcessTime = new TimeSpan(10, 0, 0);
-            var dwPrtimeStr = ConfigurationManager.AppSettings["DowngredProcessTime"];
-            if (!string.IsNullOrEmpty(dwPrtimeStr))
-            {
-                if (dwPrtimeStr.Contains(","))
-                {
-                    var dwPrtimeStrArray = dwPrtimeStr.Split(',');
-                    foreach (var processTime in dwPrtimeStrArray)
-                    {
-                        TimeSpan.TryParse(processTime, out TimeSpan ptime);
-                        dwnPrpcessTimes.Add(ptime);
-                    }
-                }
-                else
-                {
-                    TimeSpan.TryParse(dwPrtimeStr, out TimeSpan ptime);
-                    dwnPrpcessTimes.Add(ptime);
-                }
-            }
-            else
-            {
-                dwnPrpcessTimes.Add(dwnPrpcessTime);
 
+            timer2.Interval = 1000 * 300;
+            timer2.Enabled = true;
+            timer2.Tick += OnTimerEventUpDownProc;
+
+            //TimeSpan dwnPrpcessTime = new TimeSpan(10, 0, 0);
+            //var dwPrtimeStr = ConfigurationManager.AppSettings["DowngredProcessTime"];
+            //if (!string.IsNullOrEmpty(dwPrtimeStr))
+            //{
+            //    if (dwPrtimeStr.Contains(","))
+            //    {
+            //        var dwPrtimeStrArray = dwPrtimeStr.Split(',');
+            //        foreach (var processTime in dwPrtimeStrArray)
+            //        {
+            //            TimeSpan.TryParse(processTime, out TimeSpan ptime);
+            //            dwnPrpcessTimes.Add(ptime);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        TimeSpan.TryParse(dwPrtimeStr, out TimeSpan ptime);
+            //        dwnPrpcessTimes.Add(ptime);
+            //    }
+            //}
+            //else
+            //{
+            //    dwnPrpcessTimes.Add(dwnPrpcessTime);
+
+            //}
+
+        }
+
+        private void OnTimerEventUpDownProc(object sender, EventArgs e)
+        {
+            timer2.Stop();
+            try
+            {
+                var today = DateTime.Now;
+                var now = today.ToString("HH:mm");
+                var startTime = TimeSpan.Parse(startHour);
+                var endInterval = new TimeSpan(0, endHour, 0);
+                var endTime = startTime.Add(endInterval);
+                var currentTime = TimeSpan.Parse(now);
+                // WriteLogFile.WriteLog(startTime.ToString());
+
+                //foreach (var item in dwnPrpcessTimes)
+                //{
+
+
+                //if (today.ToString("mm") == "00" || today.ToString("mm") == "30")
+                //{
+                WriteLogFile.WriteLogUD("PackageChangeRequest process is starting..");
+
+                PackageChangeRequest();
+
+                WriteLogFile.WriteLogUD("PackageChangeRequest process has completed");
+
+
+                WriteLogFile.WriteLogUD("PackageChangeRequest_Upgrade process is starting..");
+
+                PackageChangeRequest_Upgrade();
+                WriteLogFile.WriteLogUD("PackageChangeRequest_Upgrade process has completed");
+
+
+                //}
+            }
+            catch (Exception ex)
+            {
+
+                WriteLogFile.WriteLogUD(ex.Message);
+
+            }
+            finally
+            {
+                timer2.Start();
             }
 
         }
@@ -157,23 +213,7 @@ namespace BillingProcessor
                 //{
 
 
-                if (today.ToString("mm") == "00" || today.ToString("mm") == "30")
-                {
-                    WriteLogFile.WriteLog("PackageChangeRequest process is starting..");
 
-                    PackageChangeRequest();
-
-                    WriteLogFile.WriteLog("PackageChangeRequest process has completed");
-
-
-                    WriteLogFile.WriteLog("PackageChangeRequest_Upgrade process is starting..");
-
-                    PackageChangeRequest_Upgrade();
-                    WriteLogFile.WriteLog("PackageChangeRequest_Upgrade process has completed");
-
-
-                }
-                //}
 
                 // Regular Process 
                 if (startTime == currentTime)
@@ -188,11 +228,14 @@ namespace BillingProcessor
                     Mobile();
 
                     SendSMS("", "Billing Processor is starting", _mobileNo);
+                    SendSMS("", "Billing Processor is starting", "8801713396444");
+                    SendSMS("", "Billing Processor is starting", "8801713396568");
+
 
                     MethodToCall();
 
 
-                    SendSMS("", "Billing Processor Stop", _mobileNo);
+                    // SendSMS("", "Billing Processor has been completed", _mobileNo);
 
 
 
@@ -251,15 +294,15 @@ namespace BillingProcessor
 
             //-------------------------------------------------------
 
-            strText = "ShiftingRequest process is starting..";
-            WriteLogFile.WriteLog(strText);
+            //strText = "ShiftingRequest process is starting..";
+            //WriteLogFile.WriteLog(strText);
+            ////listBox1.Items.Add(strText);
+
+            //ShiftingRequest();
+
+            //strText = "ShiftingRequest process has completed";
+            //WriteLogFile.WriteLog(strText);
             //listBox1.Items.Add(strText);
-
-            ShiftingRequest();
-
-            strText = "ShiftingRequest process has completed";
-            WriteLogFile.WriteLog(strText);
-            listBox1.Items.Add(strText);
             //-------------------------------------------------------
 
             strText = "OtherChargeRequest process is starting..";
@@ -331,16 +374,16 @@ namespace BillingProcessor
             WriteLogFile.WriteLog(strText);
             //listBox1.Items.Add(strText);
             //-------------------------------------------------------
-            //strText = "ReminderProcessorBill process is starting..";
-            //WriteLogFile.WriteLog(strText);
+            // strText = "ReminderProcessorBill process is starting..";
+            // WriteLogFile.WriteLog(strText);
 
 
             ////1st Reminder is stopped 2024-04-26
 
-            //ReminderProcessorBill();
+            // ReminderProcessorBill();
 
             //strText = "ReminderProcessorBill process has completed";
-            //WriteLogFile.WriteLog(strText);
+            // WriteLogFile.WriteLog(strText);
             //listBox1.Items.Add(strText);
             //-------------------------------------------------------
 
@@ -447,6 +490,12 @@ namespace BillingProcessor
 
         public void DailyBillingProcessor()
         {
+            DataTable dtCust = _idb.GetDataByProc(@"sp_GetPendingLockForBillingProcessor");
+            ProcessByPop(dtCust);
+        }
+
+        public void ProcessByPop(DataTable dtCust)
+        {
             try
             {
                 ErrorHost.Clear();
@@ -456,7 +505,6 @@ namespace BillingProcessor
                 //                    and  CustomerMaster.[CustomerID]   not in (Select CustomerID from CorpCust_Ignore)
                 //                    order By CustomerID asc");
 
-                DataTable dtCust = _idb.GetDataByProc(@"sp_GetPendingLockForBillingProcessor");
 
                 //DataTable dtCust = _idb.GetDataBySQLString(@"SELECT CustomerMaster.[CustomerID] FROM [dbo].[CustomerMaster] Where  CustomerMaster.[CustomerID] ='720625'
                 //            order By CustomerID asc");
@@ -475,6 +523,7 @@ namespace BillingProcessor
                     try
                     {
                         noOfActiveCustomer++;
+                        var indTime = DateTime.Now;
 
                         Hashtable ht = new Hashtable();
                         customerId = dr["CustomerID"].ToString();
@@ -667,7 +716,9 @@ namespace BillingProcessor
 
                                         if (objMkConnStatusDisable.StatusCode == "200")
                                         {
-                                            WriteLogFile.WriteLog(string.Concat(customerId, " is inactivated"));
+                                            var diffTime = DateTime.Now - indTime;
+
+                                            WriteLogFile.WriteLog(string.Concat(customerId, " is inactivated."));
 
 
                                             ht = new Hashtable();
@@ -713,6 +764,7 @@ namespace BillingProcessor
                                 }
                             }
                         }
+
                     }
                     catch (Exception ex)
                     {
@@ -747,6 +799,12 @@ namespace BillingProcessor
                 //        SendSMS(customerId, smsText, _mobileNo);
                 //    }
                 //}
+
+                SendSMS("", "Billing Processor has been completed. Total Lock " + noOfCustomer, "8801713396444");
+                SendSMS("", "Billing Processor has been completed. Total Lock " + noOfCustomer, "8801713396568");
+                SendSMS("", "Billing Processor has been completed. Total Lock " + noOfCustomer, _mobileNo);
+
+
             }
             catch (Exception ex)
             {
@@ -1409,7 +1467,10 @@ namespace BillingProcessor
                         int mrc = Conversion.TryCastInteger(dr["InternetMRC"].ToString());
                         int downChg = Conversion.TryCastInteger(dr["downChg"].ToString());
                         int fromStatus = Conversion.TryCastInteger(dr["FromStatusId"].ToString());
+                        //if (CustomerID == "84064")
+                        //{
 
+                        //}
 
                         int totalDues = downChg + mrc;
                         (BillingStatus billingStatus, CustomerMaster customer) = BillingService.GetBillingStatus(CustomerID, totalDues);
@@ -1430,7 +1491,7 @@ namespace BillingProcessor
                             string RequestRefNo = dr["RequestRefNo"].ToString();
                             CustomerID = dr["CustomerID"].ToString();
 
-                          
+
 
                             //if (customer.CustomerStatus == CustomerStatus.INACTIVE || customer.CustomerStatus == CustomerStatus.DISCONTINUE)
                             //{
@@ -1438,17 +1499,17 @@ namespace BillingProcessor
                             MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(customer.Host, customer.RouterUserName, customer.RouterPassword, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
                             if (objMkConnStatusEnable.StatusCode == "200")
                             {
+                                Hashtable hts = new Hashtable();
+                                hts.Add("CustomerID", CustomerID);
+                                hts.Add("ProcessID", 400);
+                                hts.Add("EntryID", PinNumber);
+                                hts.Add("RequestRefNo", RequestRefNo);
+
+                                DataTable DATA = _idb.GetDataByProc(hts, "sp_CustomerPackageChangedfromProcessor");
+
+                                WriteLogFile.WriteLogUD(string.Concat(CustomerID, " is activated:"));
+
                                 Hashtable ht = new Hashtable();
-                                ht.Add("CustomerID", CustomerID);
-                                ht.Add("ProcessID", 400);
-                                ht.Add("EntryID", PinNumber);
-                                ht.Add("RequestRefNo", RequestRefNo);
-
-                                DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChangedfromProcessor");
-
-                                WriteLogFile.WriteLog(string.Concat(CustomerID, " is activated:"));
-
-                                ht = new Hashtable();
                                 ht.Add("CustomerID", CustomerID);
                                 ht.Add("POPId", customer.RouterId);
                                 ht.Add("CustomerIP", customer.IPAddress);
@@ -1482,10 +1543,8 @@ namespace BillingProcessor
 
                             if (objMkConnStatusDisable.StatusCode == "200")
                             {
-                                WriteLogFile.WriteLog(string.Concat(CustomerID, " is inactivated"));
+                                WriteLogFile.WriteLogUD(string.Concat(CustomerID, " is inactivated"));
                                 Hashtable ht2 = new Hashtable();
-
-                                ht2 = new Hashtable();
                                 ht2.Add("CustomerID", customer.CustomerID);
                                 ht2.Add("POPId", customer.RouterId);
                                 ht2.Add("CustomerIP", customer.IPAddress);
@@ -1521,33 +1580,12 @@ namespace BillingProcessor
                 }
 
 
-                //Hashtable HT = new Hashtable();
-                //HT.Add("SuccessLogBeforeProcess", SuccessLogBeforeProcess);
-                //HT.Add("SuccessLogAfterProcess", SuccessLogAfterProcess);
-                //HT.Add("ProcessErrorlog", ProcessErrorlog);
-                //HT.Add("MKLogError", MKLogError);
-                //HT.Add("ProcessStartTime", ProcessStartTime);
-                //HT.Add("ProcessEndTime", DateTime.Now);
-                //HT.Add("NoOfCustomer", NoOfCustomer);
-                //HT.Add("ProcessorTypeName", "PackageChangeRequest");
-                //HT.Add("ID", 3);
 
-                //DataTable PROCESSLOG = _idb.GetDataByProc(HT, "sp_InsertProcessLog");
-                //ProcessorID = int.Parse(PROCESSLOG.Rows[0]["PROCSSORLOGID"].ToString());
-
-                //if (ProcessErrorlog != "" || MKLogError != "")
-                //{
-                //    SMSText = "Error!! " + " for Request Processor id " + ProcessorID + ", please take the neccessery steps to solve the problem.";
-                //    if (_mobileNo != "")
-                //    {
-                //        SendSMS(CustomerID, SMSText, _mobileNo);
-                //    }
-                //}
             }
 
             catch (Exception ex)
             {
-                WriteLogFile.WriteLog(ex.Message.ToString());
+                WriteLogFile.WriteLogUD(ex.Message.ToString());
             }
         }
 
@@ -1579,14 +1617,14 @@ namespace BillingProcessor
                     try
                     {
 
-                        
+
                         decimal mrc = request.Amount;
                         decimal adjAmt = request.BalAfterAdj;
                         decimal totalDues = mrc - adjAmt;
                         string CustomerID = request.CustomerID;
                         string RequestRefNo = request.RequestRefNo;
                         (BillingStatus billingStatus, CustomerMaster customer) = BillingService.GetBillingStatus(CustomerID, totalDues);
-                        if(CustomerID== "723967")
+                        if (CustomerID == "723967")
                         {
 
                         }
@@ -1595,28 +1633,7 @@ namespace BillingProcessor
                         if (billingStatus == BillingStatus.ExpiredButBalanceAvailable || billingStatus == BillingStatus.NotExpiredButBalanceAvailable)
                         {
 
-                            //sp_CustomerPackageChanged_Upgradation_fromProcessor
-                            // SuccessLogAfterProcess += CustomerID + ":" + DATA.Rows[0]["Feedback"].ToString() + ", ";
 
-                            //int balance = Conversion.TryCastInteger(dr["Balance"].ToString());
-                            //
-                            //if (customer.CustomerStatus == CustomerStatus.INACTIVE)
-                            //{
-                            //// -----  Bill generation ----------//
-                            //var ht = new Hashtable();
-                            //ht.Add("CustomerID", CustomerID);
-                            //ht.Add("EntryID", PinNumber);
-                            //ht.Add("ProcessID", 401);
-                            //ht.Add("MRCAmount", mrc);
-                            //ht.Add("ActivityDetail", "ACTIVE_FROM_UPGRADATION");
-
-                            //_idb.GetDataByProc(ht, "sp_BillGeneDuringDailyProcess");
-
-
-                            
-
-                            //if (customer.CustomerStatus == CustomerStatus.INACTIVE)
-                            //{
                             //  Mikrotik Enable Check 
                             MkConnStatus objMkConnStatusEnable = objMKConnection.EnableMikrotik(customer.Host, customer.RouterUserName, customer.RouterPassword, customer.MkVersion, customer.ProtocolID, Conversion.TryCastInteger(customer.InsType), customer.MkUser, customer.APIPort);
                             if (objMkConnStatusEnable.StatusCode == "200")
@@ -1629,25 +1646,26 @@ namespace BillingProcessor
                                 ht.Add("RequestRefNo", RequestRefNo);
 
                                 DataTable DATA = _idb.GetDataByProc(ht, "sp_CustomerPackageChanged_Upgradation_fromProcessor");
-
-                                WriteLogFile.WriteLog(string.Concat(CustomerID, " is activated:"));
-
-                                ht = new Hashtable();
-                                ht.Add("CustomerID", CustomerID);
-                                ht.Add("POPId", customer.RouterId);
-                                ht.Add("CustomerIP", customer.IPAddress);
-                                ht.Add("Status", 1);
-                                ht.Add("ProcessID", 401);
-                                ht.Add("EntryID", PinNumber);
-
-                                _idb.InsertData(ht, "sp_insertMKlogNCustStatus");
                                 ht.Clear();
+
+                                WriteLogFile.WriteLogUD(string.Concat(CustomerID, " is activated:"));
+
+                                Hashtable ht2 = new Hashtable();
+                                ht2.Add("CustomerID", CustomerID);
+                                ht2.Add("POPId", customer.RouterId);
+                                ht2.Add("CustomerIP", customer.IPAddress);
+                                ht2.Add("Status", 1);
+                                ht2.Add("ProcessID", 401);
+                                ht2.Add("EntryID", PinNumber);
+
+                                _idb.InsertData(ht2, "sp_insertMKlogNCustStatus");
+                                ht2.Clear();
 
                             }
                             else
                             {
                                 InsertMikrotikErrorLog(CustomerID, customer.RouterId, customer.Host, customer.IPAddress, objMkConnStatusEnable.RetMessage, objMkConnStatusEnable.StatusCode, 401);
-                                WriteLogFile.WriteLog(string.Concat(CustomerID, " Error:", objMkConnStatusEnable.RetMessage));
+                                WriteLogFile.WriteLogUD(string.Concat(CustomerID, " Error:", objMkConnStatusEnable.RetMessage));
                             }
                             //}
                             //}
@@ -1712,7 +1730,7 @@ namespace BillingProcessor
                                 else
                                 {
                                     InsertMikrotikErrorLog(CustomerID, customer.RouterId, customer.Host, customer.IPAddress, objMkConnStatusDisable.RetMessage, objMkConnStatusDisable.StatusCode, 401);
-                                    WriteLogFile.WriteLog(string.Concat(CustomerID, " Error:", objMkConnStatusDisable.RetMessage));
+                                    WriteLogFile.WriteLogUD(string.Concat(CustomerID, " Error:", objMkConnStatusDisable.RetMessage));
                                 }
                             }
 

@@ -39,9 +39,11 @@ namespace CollectionProcessor
         private void frmMain_Load(object sender, EventArgs e)
         {
 
-            schedule_Timer_Callback();
-            // DataTable dtCust = db.GetDataByProc("sp_PendingMkErrorForCollectionProcessor");
-            // DailyCollectionProcessor(dtCust);
+            //  schedule_Timer_Callback();
+            DataTable dtCust = db.GetDataByProc("sp_PendingMkErrorForCollectionProcessor");
+           // DataTable dtCust = db.GetDataByProc("sp_CustomerListForCollectionProcessor");
+
+            DailyCollectionProcessor(dtCust);
 
         }
 
@@ -172,7 +174,7 @@ namespace CollectionProcessor
                 string CustomerID = "", SMSText = "";
                 string SuccessLogBeforeProcess = "", SuccessLogAfterProcess = "", ProcessErrorlog = "", MKLogError = "";
                 string InsType = "", mkUser = "";
-                listBox1.Items.Clear();
+              //  listBox1.Items.Clear();
                 foreach (DataRow Custdr in dtCust.Rows)
                 {
 
