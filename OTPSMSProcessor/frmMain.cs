@@ -460,8 +460,7 @@ namespace SMSProcessor
 
                 ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 
-                //var url = "https://ca096.amberit.com.bd/api01/";
-                //var bearerTocken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJBbWJlcklUIiwiaWF0IjoxNzE1NDI1Nzc4LCJFeHBpcmVzIE9uIjoyMDMwOTU4NTc4LCJlbWFpbCI6Im1haGZ1enVyQGFtYmVyaXQuY29tLmJkIn0.Wlq9uKuUggmM7JjjBR-zYUNk8ra81VuAbiAAqFhe5jQ";
+                
                 var voiceSMS = new VoiceHttpRequestV2() { mobileno = mobile, otp = otp };
 
                 var client = new RestClient(ait_voice_v2_url);
