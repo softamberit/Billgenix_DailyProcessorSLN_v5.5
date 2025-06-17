@@ -45,11 +45,12 @@ namespace BillingProcessor
 
         private void frmMain_Load(object sender, EventArgs e)
         {
-            // DailyBillingProcessor();
-          //   schedule_Timer_Callback();
+             //DailyBillingProcessor();
+            schedule_Timer_Callback();
             // ReminderProcessorDue();`
-            //LockStatementMailProcessor();
-            // DailyBillingProcessor();
+            //
+          //  DailyBillingProcessor();
+           // LockStatementMailProcessor();
             // MethodToCall();
 
             // InactiveToDeviceColl();
@@ -57,9 +58,9 @@ namespace BillingProcessor
             // ReminderProcessorDue();
 
 
-           //PackageChangeRequest();
+            // PackageChangeRequest();
 
-             PackageChangeRequest_Upgrade();
+            // PackageChangeRequest_Upgrade();
 
         }
 
@@ -148,22 +149,23 @@ namespace BillingProcessor
                 //{
 
 
-                //if (today.ToString("mm") == "00" || today.ToString("mm") == "30")
-                //{
-                WriteLogFile.WriteLogUD("PackageChangeRequest process is starting..");
+                if (today.TimeOfDay > new TimeSpan(6, 0, 0))
+                {
 
-                PackageChangeRequest();
+                    WriteLogFile.WriteLogUD("PackageChangeRequest process is starting..");
 
-                WriteLogFile.WriteLogUD("PackageChangeRequest process has completed");
+                    PackageChangeRequest();
 
-
-                WriteLogFile.WriteLogUD("PackageChangeRequest_Upgrade process is starting..");
-
-                PackageChangeRequest_Upgrade();
-                WriteLogFile.WriteLogUD("PackageChangeRequest_Upgrade process has completed");
+                    WriteLogFile.WriteLogUD("PackageChangeRequest process has completed");
 
 
-                //}
+                    WriteLogFile.WriteLogUD("PackageChangeRequest_Upgrade process is starting..");
+
+                    PackageChangeRequest_Upgrade();
+                    WriteLogFile.WriteLogUD("PackageChangeRequest_Upgrade process has completed");
+
+
+                }
             }
             catch (Exception ex)
             {
@@ -266,31 +268,23 @@ namespace BillingProcessor
         {
             string strText = "";
 
-            ////------------------------------------------------------
-            //strText = "PackageChangeRequest process is starting..";
-            //WriteLogFile.WriteLog(strText);
-            ////listBox1.Items.Add(strText);
+            WriteLogFile.WriteLog("PackageUpgradeDowngradeProcess process is starting..");
+
+            PackageUpgradeDowngradeProcess();
+
+            WriteLogFile.WriteLog("PackageUpgradeDowngradeProcess process has completed");
+
+            //WriteLogFile.WriteLogUD("PackageChangeRequest process is starting..");
 
             //PackageChangeRequest();
 
-            //strText = "PackageChangeRequest process has completed";
+            //WriteLogFile.WriteLogUD("PackageChangeRequest process has completed");
 
 
-
-            WriteLogFile.WriteLog(strText);
-            //listBox1.Items.Add(strText);
-
-            //------------------------------------------------------
-
-            //strText = "PackageChangeRequest_Upgrade process is starting..";
-            //WriteLogFile.WriteLog(strText);
-            ////listBox1.Items.Add(strText);
+            //WriteLogFile.WriteLogUD("PackageChangeRequest_Upgrade process is starting..");
 
             //PackageChangeRequest_Upgrade();
-
-            //strText = "PackageChangeRequest_Upgrade process has completed";
-            //WriteLogFile.WriteLog(strText);
-            ////listBox1.Items.Add(strText);
+            //WriteLogFile.WriteLogUD("PackageChangeRequest_Upgrade process has completed");
 
             //-------------------------------------------------------
 
@@ -435,8 +429,10 @@ namespace BillingProcessor
 
         }
 
-
-
+        private void PackageUpgradeDowngradeProcess()
+        {
+             
+        }
 
         private void MonthlyRevePackageForCorporate()
         {
@@ -539,8 +535,8 @@ namespace BillingProcessor
                                 decimal debit = Conversion.TryCastDecimal(datarow["Debit"].ToString());
                                 decimal credit = Conversion.TryCastDecimal(datarow["Credit"].ToString());
                                 decimal cl = Conversion.TryCastDecimal(datarow["CreditLimit"].ToString());
-                                decimal pv = Conversion.TryCastDecimal(datarow["TotalMRC"].ToString());
-                                decimal dsc = Conversion.TryCastDecimal(datarow["Discount"].ToString());
+                                //decimal pv = Conversion.TryCastDecimal(datarow["TotalMRC"].ToString());
+                                // decimal dsc = Conversion.TryCastDecimal(datarow["Discount"].ToString());
                                 DateTime ed = Conversion.TryCastDate(datarow["EndDate"].ToString());
 
                                 var username = datarow["RouterUserName"].ToString();
@@ -569,7 +565,7 @@ namespace BillingProcessor
 
                                 if (cd > ed)
                                 {
-                                    decimal inv = debit + pv - dsc;
+                                    decimal inv = debit + netMrc;
                                     decimal ca = credit + cl;
 
                                     if (inv > ca)
@@ -1624,7 +1620,7 @@ namespace BillingProcessor
                         string CustomerID = request.CustomerID;
                         string RequestRefNo = request.RequestRefNo;
                         (BillingStatus billingStatus, CustomerMaster customer) = BillingService.GetBillingStatus(CustomerID, totalDues);
-                        if (CustomerID == "723967")
+                        if (CustomerID == "732132")
                         {
 
                         }
@@ -1899,8 +1895,8 @@ namespace BillingProcessor
                             decimal debit = Conversion.TryCastDecimal(datarow["Debit"].ToString());
                             decimal credit = Conversion.TryCastDecimal(datarow["Credit"].ToString());
                             decimal Balance = credit - debit;
-                            decimal PV = Conversion.TryCastDecimal(datarow["TotalMRC"].ToString());
-                            decimal DSC = Conversion.TryCastDecimal(datarow["Discount"].ToString());
+                            // decimal PV = Conversion.TryCastDecimal(datarow["TotalMRC"].ToString());
+                            //decimal DSC = Conversion.TryCastDecimal(datarow["Discount"].ToString());
                             decimal CL = Conversion.TryCastDecimal(datarow["CreditLimit"].ToString());
                             decimal OTC = Conversion.TryCastDecimal(datarow["TotalOTC"].ToString());
                             InsType = datarow["InsType"].ToString();
@@ -1917,7 +1913,7 @@ namespace BillingProcessor
                                 MkStatus = "false";
                             }
 
-                            if ((NetMRC + OTC - DSC) > (credit + CL) && OBJMkStatus.MikrotikStatus == 1)
+                            if ((NetMRC + OTC) > (credit + CL) && OBJMkStatus.MikrotikStatus == 1)
                             {
                                 // MK OFF, DIscontinue 
 

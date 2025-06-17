@@ -39,11 +39,11 @@ namespace CollectionProcessor
         private void frmMain_Load(object sender, EventArgs e)
         {
 
-            //  schedule_Timer_Callback();
-            DataTable dtCust = db.GetDataByProc("sp_PendingMkErrorForCollectionProcessor");
+          schedule_Timer_Callback();
+         //   DataTable dtCust = db.GetDataByProc("sp_PendingMkErrorForCollectionProcessor");
            // DataTable dtCust = db.GetDataByProc("sp_CustomerListForCollectionProcessor");
 
-            DailyCollectionProcessor(dtCust);
+         //   DailyCollectionProcessor(dtCust);
 
         }
 
@@ -206,8 +206,8 @@ namespace CollectionProcessor
                                 decimal debit = Conversion.TryCastDecimal(dr["Debit"].ToString());
                                 decimal credit = Conversion.TryCastDecimal(dr["Credit"].ToString());
                                 decimal CL = Conversion.TryCastDecimal(dr["CreditLimit"].ToString());
-                                decimal PV = Conversion.TryCastDecimal(dr["TotalMRC"].ToString());
-                                decimal DSC = Conversion.TryCastDecimal(dr["Discount"].ToString());
+                                //decimal PV = Conversion.TryCastDecimal(dr["TotalMRC"].ToString());
+                               //decimal DSC = Conversion.TryCastDecimal(dr["Discount"].ToString());
 
 
 
@@ -388,7 +388,7 @@ namespace CollectionProcessor
                                 }
                                 else if (CLD > ED)
                                 {
-                                    decimal INV = debit + PV - DSC;
+                                    decimal INV = debit + NetMRC;
                                     decimal MR = credit + CL;
                                     if (INV <= MR)
                                     {

@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-
+using System.Reflection;
 using tik4net;
 
 namespace MikrotikBulkProcessor
@@ -112,7 +112,7 @@ namespace MikrotikBulkProcessor
             // Console.ReadLine();
 
         }
-         
+
         internal void MkStatusCheckingAllCustomerProcess()
         {
             string Hostname = "", Username = "", Password = "", IPAddress = "", ProtocolID = "";
@@ -178,10 +178,13 @@ namespace MikrotikBulkProcessor
         {
             string Hostname = "", Username = "", Password = "", IPAddress = "", ProtocolID = "";
             string RouterID = ""; string InsType = ""; string mkUser = ""; string mkVersion = "";
-         
+            string MobileNo = "";
+            int NetMRC = 0;
             string statusName = "";
             string secondaryStatus = "";
             string customerId = "";
+            DateTime effectivDate;
+
 
             MkConnection objMKConnection = new MkConnection();
             DataTable dtCustomerInfo = idb.GetDataByProc("spGetUnExpectedMikrotikStatusActive");
@@ -208,6 +211,12 @@ namespace MikrotikBulkProcessor
                     //statusId = dr["StatusID"].ToString();
                     RouterID = dr["RouterID"].ToString();
                     statusName = dr["StatusName"].ToString();
+                    MobileNo = dr["Mobile"].ToString();
+                    NetMRC = Conversion.TryCastInteger(dr["NetMRC"].ToString());
+                  //  effectivDate = Conversion.TryCastDate(dr["EffectivDate"].ToString());
+
+                    
+
                     //secondaryStatus = dr["SecondaryStatus"].ToString();
 
 
@@ -221,7 +230,7 @@ namespace MikrotikBulkProcessor
 
                     MkConnStatus objMkStatus = objMKConnection.MikrotikStatus(Hostname, Username, Password, mkVersion, Conversion.TryCastInteger(ProtocolID), Conversion.TryCastInteger(InsType), mkUser);
                     custStatus = objMKConnection.GetMkStatus(statusId, statusName, secondaryStatus, InsType, objMkStatus);
-                   
+
                     //if (statusId == "1" && secondaryStatus != "INACTIVE, LOCK_FROM_BILLING," && objMkStatus.MikrotikStatus == 0)
                     //{
 
@@ -260,45 +269,51 @@ namespace MikrotikBulkProcessor
 
                     //}
 
-                    if (statusId != "1" && objMkStatus.MikrotikStatus == 1)
+                    //if (statusId != "1" && objMkStatus.MikrotikStatus == 1)
+                    //{
+                    try
                     {
-                        try
+
+                        MkConnStatus objMkConnStatusDisable = null;
+
+
+                        objMkConnStatusDisable = objMKConnection.DisableMikrotik(Hostname, Username, Password, mkVersion, Conversion.TryCastInteger(ProtocolID), Conversion.TryCastInteger(InsType), mkUser);
+                        if (objMkConnStatusDisable.StatusCode == "200")
                         {
+                            WriteLogFile.WriteLog(string.Format("CustomerID:{0},BillgenixStatus:{1}, MikrotikStatus:{2}, MK=", customerId, statusName, "Inactive"));
 
-                            MkConnStatus objMkConnStatusDisable = null;
+                            inactiveCount++;
+                            disableStatus = objMkConnStatusDisable.Status;
 
+                            Hashtable ht1 = new Hashtable();
+                            ht1.Add("CustomerID", customerId);
+                            ht1.Add("POPId", RouterID);  // pop id== router Id for "Mikrotiklog" table 
+                            ht1.Add("CustomerIP", IPAddress);
+                            ht1.Add("Status", 0);     //  Mikrotik Inactive
+                            ht1.Add("StatusID", 9);
+                            ht1.Add("ProcessID", 209);
+                            ht1.Add("EntryID", 10000);
+                            ht1.Add("ActivityDetail", custStatus);
+                            ht1.Add("SeconderyStatus", "LOCK_FROM_BILLING");
+                            new DBUtility().InsertData(ht1, "sp_insertMKlogNCustStatus");
+                            ht1.Clear();
 
-                            objMkConnStatusDisable = objMKConnection.DisableMikrotik(Hostname, Username, Password, mkVersion, Conversion.TryCastInteger(ProtocolID), Conversion.TryCastInteger(InsType), mkUser);
-                            if (objMkConnStatusDisable.StatusCode == "200")
-                            {
-                                WriteLogFile.WriteLog(string.Format("CustomerID:{0},BillgenixStatus:{1}, MikrotikStatus:{2}, MK=", customerId, statusName, "Inactive"));
+                            SendSMSAfterLock(customerId, MobileNo, NetMRC);
+                            idb.GetDataBySQLString(string.Format("Update BillingDues_ButActive_2025_05_25 set IsProcess=1 where CustomerId='{0}';select 'Success' Feedback", customerId));
 
-                                inactiveCount++;
-                                disableStatus = objMkConnStatusDisable.Status;
-
-                                Hashtable ht1 = new Hashtable();
-                                ht1.Add("CustomerID", customerId);
-                                ht1.Add("POPId", RouterID);  // pop id== router Id for "Mikrotiklog" table 
-                                ht1.Add("CustomerIP", IPAddress);
-                                ht1.Add("Status", 0);     //  Mikrotik Inactive
-                                ht1.Add("StatusID", 9);
-                                ht1.Add("ProcessID", 209);
-                                ht1.Add("EntryID", 10000);
-                                ht1.Add("ActivityDetail", custStatus);
-                                new DBUtility().InsertData(ht1, "sp_insertMKlogNCustStatus");
-                                ht1.Clear();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            disableStatus = ex.Message;
-                            WriteLogFile.WriteLog(customerId + "==>" + ex.Message);
 
                         }
-
+                    }
+                    catch (Exception ex)
+                    {
+                        disableStatus = ex.Message;
+                        WriteLogFile.WriteLog(customerId + "==>" + ex.Message);
 
                     }
-                           
+
+
+                    //}
+
 
 
                     //Hashtable ht = new Hashtable();
@@ -328,6 +343,22 @@ namespace MikrotikBulkProcessor
 
 
 
+        }
+        private void SendSMSAfterLock(string customerId, string mobile, decimal dues)
+        {
+            string dateStr = DateTime.Now.ToString("dd-MMM-yy hh:mm tt");
+            //string smsText = string.Format("কাস্টমার আইডি {0}, সর্বমোট বিল {1} টাকা পরিশোধ না করায় আপনার ইন্টারনেট {2} তারিখ হতে সাময়িক ভাবে বন্ধ রয়েছে। সংযোগটি সচল করতে বিল পরিশোধ করুনঃ {3}", customerId, Convert.ToInt32(dues), dateStr, GetCompanyInfo());
+            Hashtable hashTable = new Hashtable();
+            //            @CustomerID varchar(20),
+            //@Mobile varchar(15),
+            //@Dues   int,
+            //@DuesDate varchar(25)
+            hashTable.Add("CustomerID", customerId);
+            hashTable.Add("Dues", Convert.ToInt32(dues).ToString());
+            hashTable.Add("Mobile", mobile);
+            hashTable.Add("DuesDate", dateStr);
+            new DBUtility().GetDataByProc(hashTable, "sp_insertSMS_AfterLock");
+            hashTable.Clear();
         }
 
         public void MikrotikBulkProcessor()

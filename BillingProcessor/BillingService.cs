@@ -38,7 +38,7 @@ namespace BillingProcessor
     {
 
 
-        public static (BillingStatus, CustomerMaster) GetBillingStatus(string customerId, decimal totalMrc = 0)
+        public static (BillingStatus, CustomerMaster) GetBillingStatus(string customerId, decimal totalDues = 0)
         {
             CustomerStatus customerStatus = new CustomerStatus();
             DBUtility _idb = new DBUtility();
@@ -48,7 +48,7 @@ namespace BillingProcessor
           
             var customer = _idb.GetObjectByProc<CustomerMaster>(ht, "sp_getCustInfoforBillingProcessor");
             ht.Clear();
-            decimal debit = 0, credit = 0, cl = 0, mrc = 0, dsc = 0;
+            decimal debit = 0, credit = 0, cl = 0, requirdAmt = 0;
             DateTime ed = DateTime.MinValue;
             int statusID = 0;
             //foreach (DataRow datarow in dtCustomerInfo.Rows)
@@ -56,15 +56,15 @@ namespace BillingProcessor
             debit = customer.Debit;
             credit = customer.Credit;
             cl = customer.CreditLimit;
-            if (totalMrc == 0)
+            if (totalDues == 0)
             {
-                mrc = customer.TotalMRC;
+                requirdAmt = customer.NetMRC;
             }
             else
             {
-                mrc = totalMrc;
+                requirdAmt = totalDues;
             }
-            dsc = customer.Discount;
+            //dsc = customer.Discount;
             ed = customer.EndDate;
             statusID = customer.StatusID;
             switch (statusID)
@@ -84,18 +84,18 @@ namespace BillingProcessor
                     break;
             }
             customer.CustomerStatus = customerStatus;
-            return (BalanceChecker(debit, credit, cl, mrc, dsc, ed), customer);
+            return (BalanceChecker(debit, credit, cl, requirdAmt, ed), customer);
         }
 
       
 
-        private static BillingStatus BalanceChecker(decimal debit, decimal credit, decimal cl, decimal totalMrc, decimal dsc, DateTime ed)
+        private static BillingStatus BalanceChecker(decimal debit, decimal credit, decimal cl, decimal requirdAmt, DateTime ed)
         {
 
             DateTime cd = DateTime.Today;
             if (cd > ed)
             {
-                decimal inv = debit + totalMrc - dsc;
+                decimal inv = debit + requirdAmt;
                 decimal ca = credit + cl;
 
                 if (inv > ca)
@@ -112,7 +112,7 @@ namespace BillingProcessor
             }
             else if (cd <= ed)
             {
-                decimal inv = debit;
+                decimal inv = debit+ requirdAmt;
                 decimal mr = credit + cl;
                 if (inv <= mr)
                 {

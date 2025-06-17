@@ -151,8 +151,8 @@ namespace BillingProcessorManual
                                 decimal debit = Conversion.TryCastDecimal(datarow["Debit"].ToString());
                                 decimal credit = Conversion.TryCastDecimal(datarow["Credit"].ToString());
                                 decimal CL = Conversion.TryCastDecimal(datarow["CreditLimit"].ToString());
-                                decimal PV = Conversion.TryCastDecimal(datarow["TotalMRC"].ToString());
-                                decimal DSC = Conversion.TryCastDecimal(datarow["Discount"].ToString());
+                                //decimal PV = Conversion.TryCastDecimal(datarow["TotalMRC"].ToString());
+                               // decimal DSC = Conversion.TryCastDecimal(datarow["Discount"].ToString());
                                 DateTime ED = Conversion.TryCastDate(datarow["EndDate"].ToString());
 
                                 string Hostname = "", Username = "", Password = "", IPAddress = "", Mobile = "";
@@ -174,7 +174,7 @@ namespace BillingProcessorManual
 
                                 if (CD > ED)
                                 {
-                                    decimal INV = debit + PV - DSC;
+                                    decimal INV = debit + NetMRC;
                                     decimal CA = credit + CL;
 
                                     if (INV > CA)
