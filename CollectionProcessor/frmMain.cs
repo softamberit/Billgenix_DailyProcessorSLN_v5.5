@@ -6,6 +6,8 @@ using System;
 using System.Collections;
 using System.Data;
 using System.Net;
+using System.Net.NetworkInformation;
+using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
 
 
@@ -39,11 +41,14 @@ namespace CollectionProcessor
         private void frmMain_Load(object sender, EventArgs e)
         {
 
-          schedule_Timer_Callback();
-         //   DataTable dtCust = db.GetDataByProc("sp_PendingMkErrorForCollectionProcessor");
-           // DataTable dtCust = db.GetDataByProc("sp_CustomerListForCollectionProcessor");
+             //schedule_Timer_Callback();
+            //   DataTable dtCust = db.GetDataByProc("sp_PendingMkErrorForCollectionProcessor");
+            //  DataTable dtCust = db.GetDataByProc("sp_CustomerListForCollectionProcessor");
 
-         //   DailyCollectionProcessor(dtCust);
+            // DailyCollectionProcessor(dtCust);
+
+            DataTable reProcess = db.GetDataByProc("sp_ReprocessListForCollectionProcessor");
+            DailyCollectionProcessor(reProcess);
 
         }
 
@@ -71,7 +76,7 @@ namespace CollectionProcessor
             timer1.Enabled = true;
             timer1.Tick += new System.EventHandler(OnTimerEvent);
 
-            timer2.Interval = 1000 * 60 * 15;  // millisecond
+            timer2.Interval = 1000 * 60 * 10;  // millisecond
             timer2.Enabled = true;
             timer2.Tick += new System.EventHandler(OnTimerEvent2);
 
@@ -94,6 +99,9 @@ namespace CollectionProcessor
                 DataTable dtCust = db.GetDataByProc("sp_CustomerListForCollectionProcessor");
 
                 DailyCollectionProcessor(dtCust);
+
+               
+
 
                 //WriteLogFile.WriteLog("------------- Start Customer Query Payment Collection ------------");
                 //CustomerQueryPaymentProcessor();
@@ -125,6 +133,9 @@ namespace CollectionProcessor
                 WriteLogFile.WriteLog("------------- Start MK Error Again Process ------------");
                 DataTable dtCust = db.GetDataByProc("sp_PendingMkErrorForCollectionProcessor");
                 DailyCollectionProcessor(dtCust);
+
+                DataTable reProcess = db.GetDataByProc("sp_ReprocessListForCollectionProcessor");
+                DailyCollectionProcessor(reProcess);
 
             }
             catch (Exception ex)
@@ -174,7 +185,7 @@ namespace CollectionProcessor
                 string CustomerID = "", SMSText = "";
                 string SuccessLogBeforeProcess = "", SuccessLogAfterProcess = "", ProcessErrorlog = "", MKLogError = "";
                 string InsType = "", mkUser = "";
-              //  listBox1.Items.Clear();
+                //  listBox1.Items.Clear();
                 foreach (DataRow Custdr in dtCust.Rows)
                 {
 
@@ -207,7 +218,7 @@ namespace CollectionProcessor
                                 decimal credit = Conversion.TryCastDecimal(dr["Credit"].ToString());
                                 decimal CL = Conversion.TryCastDecimal(dr["CreditLimit"].ToString());
                                 //decimal PV = Conversion.TryCastDecimal(dr["TotalMRC"].ToString());
-                               //decimal DSC = Conversion.TryCastDecimal(dr["Discount"].ToString());
+                                //decimal DSC = Conversion.TryCastDecimal(dr["Discount"].ToString());
 
 
 
@@ -234,6 +245,24 @@ namespace CollectionProcessor
                                 mkUser = dr["MkUser"].ToString();
                                 mkVersion = dr["mkVersion"].ToString();
                                 int port = Conversion.TryCastInteger(dr["APIPort"].ToString());
+
+                                using (Ping p = new Ping())
+                                {
+                                    PingReply reply = p.Send(Hostname, 1000);
+                                    if (reply.Status != IPStatus.Success)
+                                    {
+                                        WriteLogFile.WriteLog("Router (" + Hostname + ")==> my be down");
+
+                                        DataTable ProcessUpdate = dBUtility.GetDataBySQLString("UPDATE BillingMaster SET ProcessedStatus = 2 WHERE SNID = '" + SNID + "' SELECT 'SUCCESS' AS SUCCESS");
+
+                                        continue;
+
+                                       // return new MkConnStatus("404", "Router may be down: " + objCust.Host);
+
+                                    }
+                                }
+
+
                                 //MkConnStatus OBJMkStatus = objMKConnection.MikrotikStatus(Hostname, Username, Password, mkVersion, ProtocolID, CustomerID, Conversion.TryCastInteger(InsType), mkUser);
 
                                 //if (OBJMkStatus.MikrotikStatus == 1)

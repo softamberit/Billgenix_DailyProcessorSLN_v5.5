@@ -737,12 +737,12 @@ namespace MkCommunication
                             port = _defaultPort;
                         }
                         IEnumerable<ITikReSentence> response = null;
-                        // connection.ReceiveTimeout = 60000;
-                        //connection.SendTimeout = 60000;
+                        connection.ReceiveTimeout = 60000;
+                        connection.SendTimeout = 60000;
 
                         //connection.Open("118.179.187.152",_defaultPort, "iaminvincible", "^.(AbraKaDabra).$");
                         connection.Open(Hostname.Trim(), _defaultPort, Username.Trim(), Password.Trim());
-
+                       
                         IEnumerable<ITikReSentence> sentences = connection.CreateCommandAndParameters("/ppp/secret/print", "name", mkUser).ExecuteList();
                         var mkResponse = MkResponse.Parse(sentences);
                         //var objMkResponse = new MkResponse();

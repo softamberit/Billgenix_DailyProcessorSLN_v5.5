@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Policy;
@@ -45,12 +46,12 @@ namespace BillingProcessor
 
         private void frmMain_Load(object sender, EventArgs e)
         {
-             //DailyBillingProcessor();
-            schedule_Timer_Callback();
+            DailyBillingProcessor();
+            //schedule_Timer_Callback();
             // ReminderProcessorDue();`
             //
-          //  DailyBillingProcessor();
-           // LockStatementMailProcessor();
+            //DailyBillingProcessor();
+            // LockStatementMailProcessor();
             // MethodToCall();
 
             // InactiveToDeviceColl();
@@ -101,9 +102,9 @@ namespace BillingProcessor
             timer1.Tick += OnTimerEvent;
 
 
-            timer2.Interval = 1000 * 300;
-            timer2.Enabled = true;
-            timer2.Tick += OnTimerEventUpDownProc;
+            //timer2.Interval = 1000 * 300;
+            //timer2.Enabled = true;
+            //timer2.Tick += OnTimerEventUpDownProc;
 
             //TimeSpan dwnPrpcessTime = new TimeSpan(10, 0, 0);
             //var dwPrtimeStr = ConfigurationManager.AppSettings["DowngredProcessTime"];
@@ -268,11 +269,6 @@ namespace BillingProcessor
         {
             string strText = "";
 
-            WriteLogFile.WriteLog("PackageUpgradeDowngradeProcess process is starting..");
-
-            PackageUpgradeDowngradeProcess();
-
-            WriteLogFile.WriteLog("PackageUpgradeDowngradeProcess process has completed");
 
             //WriteLogFile.WriteLogUD("PackageChangeRequest process is starting..");
 
@@ -431,7 +427,7 @@ namespace BillingProcessor
 
         private void PackageUpgradeDowngradeProcess()
         {
-             
+
         }
 
         private void MonthlyRevePackageForCorporate()
@@ -557,11 +553,21 @@ namespace BillingProcessor
                                 //successLogBeforeProcess += "ID:" + customerId + ", M:" + netMrc + ", B:" + balance + "CED:" + ced + ", MK:" + MkStatus + " #";
                                 successLogBeforeProcess += customerId + ",";
                                 WriteLogFile.WriteLog(string.Concat(customerId, " is active found"));
-
                                 if (ErrorHost.Exists(s => s.Equals(hostname)))
                                 {
                                     continue;
                                 }
+
+                                using (Ping p = new Ping())
+                                {
+                                    PingReply reply = p.Send(hostname, 1000);
+                                    if (reply.Status != IPStatus.Success)
+                                    {
+                                        WriteLogFile.WriteLog("Router (" + hostname + ")==> my be down");
+                                        continue;
+                                    }
+                                }
+
 
                                 if (cd > ed)
                                 {
